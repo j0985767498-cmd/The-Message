@@ -308,6 +308,10 @@ button.cr{background:var(--red);color:#fff;border-color:var(--red)}button.cb{bac
 .an.an-pass{font-size:inherit;padding:12px 22px;background:rgba(8,14,12,.86);color:#f3e8cf;border-radius:14px;}
 @media (max-height:520px),(max-width:620px){.an.an-pass{padding:6px 12px;}}
 .arw path{stroke-width:6;}
+.skrow{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:4px 0;color:var(--muted);font-size:.9em;}
+button.skb{color:#fff;border:0;font-weight:700;box-shadow:0 0 10px rgba(255,210,122,.45);animation:skglow 1.6s infinite;}
+button.skb.sk-B{background:var(--blue)}button.skb.sk-R{background:var(--red)}button.skb.sk-Y{background:#c99a1a;color:#1b140a}
+@keyframes skglow{50%{box-shadow:0 0 18px rgba(255,210,122,.9);}}
 </style>
 </head>
 <body>
@@ -503,7 +507,7 @@ const IMPL={laogui:['就計','城府','遺志'],laoqiang:['就計'],emeifeng:['�
  beileimao:['換日','偷天','逆轉'],lifumengmianren:['英雄','救美','情敵'],xiaomage:['英雄本色','殺身成仁'],qibai:['敏銳','聯動','風動'],
  liujie:['拷問','搜取','嚴刑'],guaidao99:['陰謀','陽謀'],xiaobai:['喬裝'],zhiyeshashou:['連擊','預謀'],zhimingxiangshui:['攻守兼備','臨危受命'],
  qingbaochuzhang:['隔牆有耳','偷龍轉鳳','鑿壁偷光'],fuermosi:['真相','細節'],fushe:['彈藥無限'],dameinu:['精明']};
-ROLES.forEach(r=>r.skills.forEach(s=>{s.impl=(IMPL[r.id]||[]).includes(s.n);if(r.id==='fushe'&&s.n==='彈藥無限')s.cover=true;}));
+ROLES.forEach(r=>r.skills.forEach(s=>{s.impl=true;if(r.id==='fushe'&&s.n==='彈藥無限')s.cover=true;}));
 
 const ENV='<path d="M10 16h44v26H10z" fill="none"/><path d="M10 16l22 15 22-15" fill="none"/>';
 const ART={
@@ -697,6 +701,7 @@ async function newGame(seats){
 async function gameLoop(gen){
  while(!G.over&&G.gen===gen){
   if(alive(G.turn))await doTurn(G.turn);
+  if(G.armor)await armorEnd();
   if(G.over||G.gen!==gen)break;
   const prev=G.turn;G.turn=nextAlive(G.turn);
   const off=i=>(i-G.start+N())%N();
@@ -706,7 +711,7 @@ async function gameLoop(gen){
 async function setPhase(ph,banner=true){G.phase=ph;G.step=null;UI.render();if(banner)UI.banner(`${pname(G.turn)} 的回合`,ph);await sleep((banner?1150:400)/SET.speed);}
 
 async function doTurn(A){
- G.locks=new Set();G.tigers=new Set();G.turnCount++;
+ G.locks=new Set();G.tigers=new Set();G.turnCount++;G.tianyi=null;G.encrypt=null;G.lengxue=null;
  log(`—— 第 ${G.round} 輪：${pname(A)} 的回合 ——`,'turn');
  if(humanCtl(A))UI.sfx('myturn');
  await setPhase('回合開始');if(G.over)return;
@@ -727,11 +732,11 @@ async function turnStartSkills(A){
 async function ammo(i){if(skillOn(i,'彈藥無限')&&!G.players[i].hand.length&&await yesNo(i,'彈藥無限','你沒有手牌：要翻開角色並抽兩張牌嗎？')){await sk(i,'彈藥無限');flip(i);drawCards(i,2);}}
 
 async function playPhase(A){
- while(alive(A)&&!G.over){const r=await ask(A,{type:'play',ctx:{kind:'ownPlay'}});if(!r)break;await useCard(A,r,{kind:'ownPlay'});}
+ while(alive(A)&&!G.over){const r=await ask(A,{type:'play',ctx:{kind:'ownPlay'}});if(!r)break;if(r.skill)await useSkill(A,r.skill,{kind:'ownPlay'});else await useCard(A,r,{kind:'ownPlay'});}
  if(SET.simple||G.over)return;
  const order=[];for(let k=1;k<N();k++)order.push((A+k)%N());
  for(const j of order){if(G.over)break;if(!alive(j))continue;G.priority=j;UI.render();
-  while(alive(j)&&!G.over){const r=await ask(j,{type:'play',ctx:{kind:'otherPlay'}});if(!r)break;await useCard(j,r,{kind:'otherPlay'});}}
+  while(alive(j)&&!G.over){const r=await ask(j,{type:'play',ctx:{kind:'otherPlay'}});if(!r)break;if(r.skill)await useSkill(j,r.skill,{kind:'otherPlay'});else await useCard(j,r,{kind:'otherPlay'});}}
  G.priority=null;}
 
 /* ===== legality ===== */
@@ -742,9 +747,10 @@ function lockConvert(i,c){return (skillOn(i,'換日')&&isK(c.color))||(skillOn(i
 function canUse(i,card,ctx,as){
  as=as||card.type;const turn=G.turn, tr=G.transit, k=ctx.kind==='response'?ctx.base.kind:ctx.kind, resp=ctx.kind==='response';
  if(as==='public')return false;
- if(as==='counter')return resp&&G.stack.length>0;
+ if(as==='counter')return resp&&G.stack.some(it=>!it.noCounter);
  if(as==='burn')return blackTargets().length>0;
  if(resp&&!(k==='step1'||k==='step2'))return false;
+ if(tr&&G.encrypt!=null&&tr.sender===G.encrypt&&['intercept','swap','transfer','decrypt'].includes(as))return false;
  switch(as){
   case 'lock':{if(!playerTargets(i,as).length)return false;
    if(i===turn&&(k==='ownPlay'||k==='step1'))return true;
@@ -761,14 +767,16 @@ function canUse(i,card,ctx,as){
   case 'transfer':return k==='step2'&&!!tr&&tr.target===i&&!G.locks.has(i)&&tr.forcedTo!==i&&playerTargets(i,as).length>0;
  }return false;}
 function legalPlays(i,ctx){const out=[];for(const c of G.players[i].hand){if(canUse(i,c,ctx,c.type))out.push({card:c,as:c.type});
-  if(c.type!=='lock'&&lockConvert(i,c)&&canUse(i,c,ctx,'lock'))out.push({card:c,as:'lock'});}return out;}
+  if(c.type!=='lock'&&lockConvert(i,c)&&canUse(i,c,ctx,'lock'))out.push({card:c,as:'lock'});
+  if(skillOn(i,'變裝')&&c.trans==='d'&&canUse(i,c,ctx,'lock'))out.push({card:c,as:'lock',via:'變裝'});
+  if(G.lengxue===i&&canUse(i,c,ctx,'lock'))out.push({card:c,as:'lock',via:'冷血'});}return out;}
 function legalCards(i,ctx){const s=new Map();legalPlays(i,ctx).forEach(p=>s.set(p.card.uid,p.card));return [...s.values()];}
 
 /* ===== ask ===== */
 async function ask(i,req){
  const gen=G.gen;const p=G.players[i];
  if(humanCtl(i)&&!p.lost){
-  if(req.type==='play'&&SET.autoSkip&&legalPlays(i,req.ctx).length===0){await sleep(60);return null;}
+  if(req.type==='play'&&SET.autoSkip&&legalPlays(i,req.ctx).length===0&&!relevantSkills(i,req.ctx).length){await sleep(60);return null;}
   const r=p.ctrl==='local'?await UI.humanAsk(req):await Net.askRemote(i,req);
   if(G.gen!==gen)throw new Error('stale');return normAns(i,req,r);}
  const r=AI.decide(i,req);
@@ -776,10 +784,11 @@ async function ask(i,req){
  if(G.gen!==gen)throw new Error('stale');return r;}
 function normAns(i,req,r){if(r===undefined)return defaultAnswer(i,req);const H=G.players[i].hand;
  if(req.type==='play'||req.type==='pass'){
+  if(r&&r.skill){if(req.type==='play')return activeSkills(i,req.ctx).includes(r.skill)?{skill:r.skill}:null;return passSkills(i).includes(r.skill)?{skill:r.skill}:defaultAnswer(i,req);}
   const c=r&&r.card?H.find(x=>x.uid===r.card.uid):null;
   if(!c)return req.type==='pass'?defaultAnswer(i,req):null;
   const out={card:c,as:r.as||c.type,target:r.target};
-  if(req.type==='play'&&!canUse(i,c,req.ctx,out.as))return null;
+  if(req.type==='play'){if(r.via){if(!legalPlays(i,req.ctx).some(p=>p.card===c&&p.via===r.via))return null;out.via=r.via;}else if(!canUse(i,c,req.ctx,out.as))return null;}
   if(req.type==='pass'){out.target=c.trans==='d'?(alive(r.target)&&r.target!==i?r.target:aliveList().find(j=>j!==i)):null;}
   return out;}
  if(req.type==='discard'){const c=r?H.find(x=>x.uid===r.uid):null;return c||H[Math.floor(Math.random()*H.length)];}
@@ -810,18 +819,19 @@ async function announceUse(i,it,resp){UI.sfx(it.as);let tgt=null;
  const ti=it.as==='counter'?(G.stack[it.target]?G.stack[it.target].pi:null):it.as==='burn'&&it.target?it.target.owner:typeof it.target==='number'?it.target:null;
  if(ti!=null&&ti!==i)UI.arrow(i,ti,it.as);
  await announce({kind:'use',who:i,card:it.card,as:it.as,target:tgt,resp,ti});}
-function mkItem(i,r){return {pi:i,card:r.card,as:r.as||r.card.type,target:r.target,negated:false};}
+function mkItem(i,r){return {pi:i,card:r.card,as:r.as||r.card.type,target:r.target,negated:false,noCounter:r.via==='變裝'||r.via==='冷血'};}
 async function useCard(i,r,baseCtx){
- takeFromHand(i,r.card);const item=mkItem(i,r);
+ takeFromHand(i,r.card);const item=mkItem(i,r);if(r.via==='變裝'){markY(i,'變裝');await sk(i,'變裝');}
  G.stack=[item];log(describeUse(i,r),'use');UI.render();await announceUse(i,item);
- await responseLoop(i,baseCtx);if(G.over)return;
+ if(G.tianyi!==i)await responseLoop(i,baseCtx);if(G.over)return;
  await resolveStack();}
 async function responseLoop(last,baseCtx){
  let cur=nextAlive(last),passes=0;
  while(!G.over){const need=aliveCount()-1;if(passes>=need||need<=0)break;
   if(cur===last){cur=nextAlive(cur);continue;}
   const r=await ask(cur,{type:'play',ctx:{kind:'response',base:baseCtx}});
-  if(r){takeFromHand(cur,r.card);const it=mkItem(cur,r);
+  if(r&&r.skill){await useSkill(cur,r.skill,{kind:'response',base:baseCtx});last=cur;passes=0;cur=nextAlive(cur);continue;}
+  if(r){takeFromHand(cur,r.card);const it=mkItem(cur,r);if(r.via==='變裝'){markY(cur,'變裝');await sk(cur,'變裝');}
    log(describeUse(cur,r),'use');G.stack.push(it);UI.render();await announceUse(cur,it,true);
    if(it.as==='counter')await counterPlayed(cur,it);
    last=cur;passes=0;}
@@ -935,9 +945,17 @@ async function passPhase(A){
  const P=G.players[A];
  await ammo(A);
  if(!P.hand.length){await loseGame(A,'無法傳出情報');return;}
- const r=await ask(A,{type:'pass'});if(G.over)return;
+ let r=await ask(A,{type:'pass'});if(G.over)return;let method=null;
+ if(r&&r.skill){const n=r.skill;markY(A,n);await sk(A,n);const others=aliveList().filter(j=>j!==A);
+  if(n==='黑色之吻'){const bl=P.hand.filter(c=>isK(c.color));const uid=await choose(A,{title:'黑色之吻：選一張黑色手牌當作直達傳出',options:cardOpts(bl)},()=>AI.blackPassCard(A,bl).uid);
+   const t=await choose(A,{title:'黑色之吻：傳給誰？（他會被鎖定）',options:playerOpts(others)},()=>AI.blackTarget(A,others)??others[0]);
+   r={card:P.hand.find(c=>c.uid===uid)||bl[0],target:t};G.locks.add(t);log(`${pname(t)} 被鎖定。`,'fx');UI.fx('lock',t);}
+  else{const bl=P.intel.filter(c=>isK(c.color));const uid=await choose(A,{title:'殺意：選你面前一張黑情報當作直達傳出',options:cardOpts(bl)},()=>bl[0].uid);
+   const t=await choose(A,{title:'殺意：傳給誰？',options:playerOpts(others)},()=>AI.blackTarget(A,others)??others[0]);
+   const c=takeUid(P.intel,uid)||bl[0];P.hand.push(c);r={card:c,target:t};}
+  method='d';}
  takeFromHand(A,r.card);
- const tr={card:r.card,sender:A,method:r.card.trans,faceUp:r.card.trans==='t',target:null,returnTo:null,interceptor:null,forcedTo:null,swapped:false,seenBy:new Set([A])};
+ const tr={card:r.card,sender:A,method:method||r.card.trans,faceUp:(method||r.card.trans)==='t',target:null,returnTo:null,interceptor:null,forcedTo:null,swapped:false,seenBy:new Set([A])};
  tr.target=tr.method==='d'?r.target:nextAlive(A);G.transit=tr;
  log(`${pname(A)} 以${TR_TXT[tr.method]}傳出情報${tr.faceUp?'：'+cdesc(tr.card):''}${tr.method==='d'?'，目標 '+pname(tr.target):''}。`,'pass');
  UI.moveTransit(true);UI.sfx('pass');UI.path(A,tr.target,tr.method);
@@ -985,7 +1003,7 @@ async function openWindow(kind,start){
  if(!alive(cur))cur=nextAlive(cur);
  while(!G.over){if(passes>=aliveCount())break;
   const r=await ask(cur,{type:'play',ctx:{kind}});
-  if(r){await useCard(cur,r,{kind});passes=0;if(G.over)return;if(G.transit&&G.transit.target!==t0)return;}
+  if(r){if(r.skill)await useSkill(cur,r.skill,{kind});else await useCard(cur,r,{kind});passes=0;if(G.over)return;if(G.transit&&G.transit.target!==t0)return;}
   else passes++;
   cur=nextAlive(cur);}}
 
@@ -994,7 +1012,9 @@ async function receiveIntel(i,c,info={}){
  const p=G.players[i];if(!alive(i)||G.over){G.discard.push(c);return;}
  p.intel.push(c);log(`${pname(i)} 獲得情報：${cdesc(c)}。`,'gain');UI.fx('gain',i,c.uid);UI.sfx('gain');UI.render();await announce({kind:'gain',who:i,card:c});
  if(c.type==='public'){const v=PUB_VARS[c.v];if(v[p.identity]){drawCards(i,1);log(`${pname(i)} 依公開文本抽了一張牌。`,'fx');}else log(`${pname(i)} 依公開文本不需動作。`);}
- if(blacks(p)>=3){
+ if(G.armor&&G.armor.i===i&&isK(c.color))G.armor.uids.push(c.uid);
+ if(blacks(p)>=3&&G.armor&&G.armor.i===i){log(`${pname(i)} 的合金裝備生效，本回合不會因黑情報死亡。`,'fx');await gainTriggers(i,c,info,false);}
+ else if(blacks(p)>=3){
   if(skillOn(i,'殺身成仁')){markY(i,'殺身成仁');await sk(i,'殺身成仁');await gainTriggers(i,c,info,true);checkWin();if(G.over)return;if(blacks(p)>=3)await killFlow(i,info);}
   else await killFlow(i,info);}
  else await gainTriggers(i,c,info,false);
@@ -1143,6 +1163,106 @@ function endGame(res,W){G.over=true;G.result=res;G.winners=W;G.players.forEach(p
  if(extra.length)msg+=` 一同獲勝：${extra.map(pname).join('、')}。`;
  log('遊戲結束：'+msg,'turn');UI.render();UI.showResult(msg);}
 
+/* ===== batch 2: active skills ===== */
+const othersWithIntel=i=>aliveList().filter(j=>j!==i&&G.players[j].intel.length);
+const ACT={
+ '犧牲':{k:'any',ok:i=>G.players[i].hand.some(c=>isK(c.color))},
+ '合謀':{k:'any',ok:i=>aliveList().some(j=>j!==i&&G.players[j].roleUp)},
+ '攤牌':{k:'any',ok:i=>aliveList().some(j=>j!==i&&!G.players[j].idOpen)},
+ '狙擊':{k:'any',ok:i=>othersWithIntel(i).length>0},
+ '點射':{k:'any',ok:i=>aliveList().some(j=>G.players[j].intel.length)},
+ '截上截':{k:['step1'],ok:i=>!!G.transit&&i!==G.turn&&G.transit.target!==i&&!(G.encrypt!=null&&G.transit.sender===G.encrypt)},
+ '天衣無縫':{k:['ownPlay'],ok:i=>i===G.turn&&G.tianyi!==i},
+ '潛藏伏擊':{k:'any',ok:i=>othersWithIntel(i).length>0},
+ '螳螂捕蟬':{k:'any',ok:i=>i!==G.turn&&aliveList().some(j=>j!==i&&!G.locks.has(j))},
+ '警覺':{k:['response'],ok:i=>G.stack.some(it=>it.pi!==i&&!it.negated)},
+ '速譯':{k:['step1','step2'],ok:i=>!!G.transit&&!G.transit.faceUp&&!G.transit.seenBy.has(i)},
+ '加密':{k:['ownPlay'],ok:i=>i===G.turn&&G.phase==='出牌(1)'&&G.encrypt!==i},
+ '血染玫瑰':{k:'any',ok:i=>aliveList().length>1&&poolSize()>=2},
+ '先機':{k:'any',ok:i=>aliveList().some(j=>j!==i&&G.players[j].hand.length)},
+ '詭計':{k:'any',ok:i=>G.players[i].intel.some(c=>isR(c.color)||isB(c.color))},
+ '收買':{k:'any',ok:i=>G.players[i].hand.length>=4&&othersWithIntel(i).length>0},
+ '出賣':{k:'any',ok:i=>G.players[i].intel.filter(c=>isR(c.color)||isB(c.color)).length>=2&&othersWithIntel(i).length>0},
+ '冷血':{k:['ownPlay'],ok:i=>i===G.turn&&G.lengxue!==i},
+ '急中生智':{k:'any',ok:(i,ctx)=>G.players[i].intel.length>0&&jizhongTypes(i,ctx).length>0},
+ '揭露':{k:['step1','step2'],ok:i=>!!G.transit&&!G.transit.faceUp&&G.transit.method==='m'&&G.players[i].hand.length>0},
+ '聲東擊西':{k:['step1'],ok:i=>!!G.transit&&aliveList().some(j=>j!==i)},
+ '合金裝備':{k:'any',ok:i=>!(G.armor&&G.armor.i===i)},
+ '愛情':{k:['ownPlay'],ok:i=>i===G.turn&&!G.players[i].idOpen&&blackTargets().length>0},
+ '仇恨':{k:'any',ok:i=>G.players[i].intel.some(c=>isK(c.color))&&aliveList().some(j=>j!==i&&isMale(j))}};
+function activeSkills(i,ctx){if(!G||!G.players||!alive(i))return [];const k=ctx.kind;const out=[];
+ for(const [n,a] of Object.entries(ACT)){if(!skillOn(i,n))continue;if(a.k!=='any'&&!a.k.includes(k))continue;try{if(!a.ok(i,ctx))continue;}catch(e){continue;}out.push(n);}return out;}
+function relevantSkills(i,ctx){const all=activeSkills(i,ctx);if(ctx.kind==='ownPlay'||ctx.kind==='otherPlay')return all;return all.filter(n=>ACT[n].k!=='any');}
+function passSkills(i){const out=[];if(skillOn(i,'黑色之吻')&&G.players[i].hand.some(c=>isK(c.color)))out.push('黑色之吻');if(skillOn(i,'殺意')&&G.players[i].intel.some(c=>isK(c.color)))out.push('殺意');return out;}
+function jizhongTypes(i,ctx){const c={uid:-1,type:'counter',color:'k',trans:'m'};return Object.keys(CT).filter(t=>t!=='public'&&t!=='probe'&&canUse(i,c,ctx,t));}
+function intelOpts(ids){const o=[];for(const j of ids)for(const c of G.players[j].intel)o.push({label:`${pname(j)}・${cdesc(c)}`,value:j+':'+c.uid,card:c});return o;}
+async function burnIntel(j,uid){const P=G.players[j];const c=takeUid(P.intel,uid);if(c){UI.fx('burn',j,uid);G.discard.push(c);log(`${pname(j)} 面前的 ${COL_TXT[c.color]}色情報被燒毀。`,'fx');UI.render();}}
+async function armorEnd(){const a=G.armor;G.armor=null;if(!a)return;const P=G.players[a.i];if(!alive(a.i))return;
+ const gone=P.intel.filter(c=>a.uids.includes(c.uid));if(gone.length){P.intel=P.intel.filter(c=>!a.uids.includes(c.uid));G.discard.push(...gone);log(`${pname(a.i)} 的合金裝備結束，燒毀本回合獲得的 ${gone.length} 張黑情報。`,'fx');UI.render();}
+ if(blacks(P)>=3)await killFlow(a.i,{});checkWin();}
+async function useSkill(i,n,ctx){const P=G.players[i];if(!activeSkills(i,ctx).includes(n))return;
+ const s=skillDef(i,n);if(s.c==='Y')markY(i,n);if(s.cover)flip(i,n);await sk(i,n);const others=aliveList().filter(j=>j!==i);
+ switch(n){
+  case '犧牲':{drawCards(i,1);const bl=P.hand.filter(c=>isK(c.color));if(!bl.length)break;
+   const uid=await choose(i,{title:'犧牲：選一張黑色手牌放在自己面前',options:cardOpts(bl)},()=>bl[0].uid);const c=takeUid(P.hand,uid);if(c)await receiveIntel(i,c,{by:i,src:'skill'});break;}
+  case '合謀':{const cand=others.filter(j=>G.players[j].roleUp);const t=await choose(i,{title:'合謀：和誰互看身份？',options:playerOpts(cand)},()=>AI.unknownPick(i,cand));
+   coverRole(i,'合謀');log(`你看到 ${pname(t)} 的身份是【${G.players[t].identity}】。`,'me',i);log(`你看到 ${pname(i)} 的身份是【${P.identity}】。`,'me',t);
+   AI.learn(i,t,[G.players[t].identity]);AI.learn(t,i,[P.identity]);log(`${pname(i)} 與 ${pname(t)} 互看了身份牌。`);
+   if(R(t).hidden&&G.players[t].roleUp&&P.hand.some(c=>isK(c.color))&&await yesNo(i,'合謀',`${pname(t)} 是翻開的潛伏角色：要在自己面前放一張黑情報，把他的角色覆蓋嗎？`,()=>blacks(P)===0&&AI.friend(i,t)<0)){
+    const bl=P.hand.filter(c=>isK(c.color));const c=takeUid(P.hand,bl[0].uid);await receiveIntel(i,c,{by:i,src:'skill'});if(alive(i))coverRole(t,'合謀');}break;}
+  case '攤牌':{const cand=others.filter(j=>!G.players[j].idOpen);const t=await choose(i,{title:'攤牌：翻開誰的身份牌？',options:playerOpts(cand)},()=>AI.unknownPick(i,cand));
+   P.idOpen=true;G.players[t].idOpen=true;log(`${pname(i)} 的身份是【${P.identity}】，${pname(t)} 的身份是【${G.players[t].identity}】。`,'fx');aliveList().forEach(k=>{AI.learn(k,i,[P.identity]);AI.learn(k,t,[G.players[t].identity]);});break;}
+  case '狙擊':{const cand=othersWithIntel(i);const t=await choose(i,{title:'狙擊：燒毀誰面前的情報？',options:playerOpts(cand)},()=>AI.snipeTarget(i,cand));
+   const I=G.players[t].intel;const picks=await choose(i,{title:`狙擊：選最多三張 ${pname(t)} 面前的情報燒毀`,options:cardOpts(I),min:1,max:Math.min(3,I.length)},()=>AI.snipeCards(i,t).map(c=>c.uid));
+   for(const uid of (Array.isArray(picks)?picks:[picks]))await burnIntel(t,uid);break;}
+  case '點射':case '潛藏伏擊':{const ids=n==='點射'?aliveList().filter(j=>G.players[j].intel.length):othersWithIntel(i);
+   const v=await choose(i,{title:n==='點射'?'點射：燒毀場上哪張情報？':'潛藏伏擊：把哪張情報放回牌庫頂？',options:intelOpts(ids)},()=>AI.pickFieldIntel(i,ids));
+   const [j,uid]=String(v).split(':').map(Number);if(n==='點射')await burnIntel(j,uid);else{const c=takeUid(G.players[j].intel,uid);if(c){G.deck.push(c);log(`${pname(j)} 面前的一張情報被放回牌庫頂。`,'fx');}}break;}
+  case '截上截':{const tr=G.transit;const prevT=tr.target;if(tr.returnTo==null)tr.returnTo=tr.target;tr.interceptor=i;tr.target=i;log(`情報被 ${pname(i)} 截獲，改傳向他。`,'fx');UI.arrow(prevT,i,'intercept');UI.moveTransit();await jizhongji(prevT,i,'截獲');break;}
+  case '天衣無縫':G.tianyi=i;log(`本回合 ${pname(i)} 使用的卡牌都無法被回應。`,'fx');break;
+  case '螳螂捕蟬':{const cand=others.filter(j=>!G.locks.has(j));const t=await choose(i,{title:'螳螂捕蟬：讓誰被鎖定？',options:playerOpts(cand)},()=>AI.lockPick(i,cand));UI.arrow(i,t,'lock');await applyLock(i,t,true);break;}
+  case '警覺':{const st=G.stack.map((it,k)=>({it,k})).filter(x=>x.it.pi!==i&&!x.it.negated);const top=st[st.length-1];if(top){top.it.negated=true;UI.arrow(i,top.it.pi,'counter');log(`${pname(top.it.pi)} 的【${CT[top.it.as].name}】被警覺化解。`,'fx');}break;}
+  case '速譯':{const tr=G.transit;tr.seenBy.add(i);log(`你看到情報是 ${cdesc(tr.card)}。`,'me',i);drawCards(i,1);break;}
+  case '加密':G.encrypt=i;log(`本回合 ${pname(i)} 傳出的情報不受截獲、調包、轉移、破譯影響。`,'fx');break;
+  case '血染玫瑰':{const t=await choose(i,{title:'血染玫瑰：指定誰？',options:playerOpts(others)},()=>AI.blackTarget(i,others)??others[0]);
+   const top=[drawOne(),drawOne()].filter(Boolean);log(`牌庫頂兩張是：${top.map(cdesc).join('、')}。`,'fx');const hit=top.some(c=>isK(c.color));for(let k=top.length-1;k>=0;k--)G.deck.push(top[k]);
+   UI.arrow(i,t,'burn');if(P.hand.some(c=>isK(c.color)))await placeBlacks(i,t,hit?3:1,'血染玫瑰');break;}
+  case '先機':{const cand=others.filter(j=>G.players[j].hand.length);const t=await choose(i,{title:'先機：抽取誰的手牌？',options:playerOpts(cand)},()=>cand.sort((a,b)=>G.players[b].hand.length-G.players[a].hand.length)[0]);
+   const H=G.players[t].hand;const n2=Math.min(3,H.length);for(let k=0;k<n2;k++)P.hand.push(H.splice(Math.floor(Math.random()*H.length),1)[0]);drawCards(t,1);UI.arrow(i,t,'intercept');log(`${pname(i)} 抽走 ${pname(t)} ${n2} 張手牌，${pname(t)} 抽一張牌。`,'fx');break;}
+  case '詭計':{const rb=P.intel.filter(c=>isR(c.color)||isB(c.color));const uid=await choose(i,{title:'詭計：把哪張情報收進手牌？',options:cardOpts(rb)},()=>rb[0].uid);const c=takeUid(P.intel,uid);if(c){P.hand.push(c);log(`${pname(i)} 把面前一張情報收進手牌。`,'fx');}break;}
+  case '收買':{const cand=othersWithIntel(i);const t=await choose(i,{title:'收買：要收買誰？',options:playerOpts(cand)},()=>AI.buyTarget(i,cand));
+   const picks=await choose(i,{title:`收買：選四張手牌交給 ${pname(t)}`,options:cardOpts(P.hand),min:4,max:4},()=>P.hand.slice().sort((a,b)=>AI.cardVal(i,a)-AI.cardVal(i,b)).slice(0,4).map(c=>c.uid));
+   for(const uid of picks){const c=takeUid(P.hand,uid);if(c)G.players[t].hand.push(c);}
+   const I=G.players[t].intel;if(!I.length)break;const uid=await choose(i,{title:`收買：拿走 ${pname(t)} 面前哪張情報？`,options:cardOpts(I)},()=>AI.bestSelf(i,I).uid);
+   const c=takeUid(I,uid);UI.arrow(t,i,'intercept');if(c)await receiveIntel(i,c,{by:i,src:'skill'});break;}
+  case '出賣':{const rb=P.intel.filter(c=>isR(c.color)||isB(c.color));const picks=await choose(i,{title:'出賣：棄掉自己面前兩張紅或藍情報',options:cardOpts(rb),min:2,max:2},()=>AI.sellCards(i,rb).map(c=>c.uid));
+   for(const uid of picks){const c=takeUid(P.intel,uid);if(c)G.discard.push(c);}
+   const cand=othersWithIntel(i);if(!cand.length)break;const v=await choose(i,{title:'出賣：拿走誰面前的哪張情報？',options:intelOpts(cand)},()=>AI.pickGainIntel(i,cand));
+   const [j,uid]=String(v).split(':').map(Number);const c=takeUid(G.players[j].intel,uid);UI.arrow(j,i,'intercept');if(c)await receiveIntel(i,c,{by:i,src:'skill'});break;}
+  case '冷血':G.lengxue=i;log(`本回合 ${pname(i)} 的任意手牌都能當作無法識破的鎖定。`,'fx');break;
+  case '急中生智':{const uid=await choose(i,{title:'急中生智：用面前哪張情報？',options:cardOpts(P.intel)},()=>P.intel[0].uid);
+   const types=jizhongTypes(i,ctx);const as=await choose(i,{title:'急中生智：當作哪張功能牌？',options:types.map(t=>({label:CT[t].name,value:t}))},()=>types[0]);
+   let target=null;const pts=playerTargets(i,as);
+   if(pts)target=await choose(i,{title:`【${CT[as].name}】選目標`,options:playerOpts(pts)},()=>AI.blackTarget(i,pts)??pts[0]);
+   else if(as==='burn'){const bt=blackTargets();const v=await choose(i,{title:'燒毀哪張黑情報？',options:bt.map((b,k)=>({label:`${pname(b.owner)} 的黑情報`,value:k}))},()=>0);target=bt[v];}
+   else if(as==='counter'){const ks=G.stack.map((it,k)=>({it,k})).filter(x=>!x.it.noCounter);const v=await choose(i,{title:'識破哪張？',options:ks.map(x=>({label:`${pname(x.it.pi)}【${CT[x.it.as].name}】`,value:x.k}))},()=>ks[ks.length-1].k);target=v;}
+   const c=takeUid(P.intel,uid);if(!c)break;const item={pi:i,card:c,as,target,negated:false,noCounter:true};log(`${pname(i)} 把面前的情報當作【${CT[as].name}】使用。`,'use');
+   if(ctx.kind==='response'){G.stack.push(item);await announceUse(i,item,true);}else{G.stack=[item];await announceUse(i,item);await resolveStack();}break;}
+  case '揭露':{const uid=await choose(i,{title:'揭露：棄一張手牌',options:cardOpts(P.hand)},()=>AI.worstCard(i).uid);const d=takeUid(P.hand,uid);if(d)G.discard.push(d);
+   const tr=G.transit;tr.faceUp=true;log(`傳遞中的密電被翻開：${cdesc(tr.card)}。`,'fx');UI.fx('swap');if(isK(tr.card.color)){drawCards(i,2);log(`是黑情報，${pname(i)} 抽兩張牌。`);}break;}
+  case '聲東擊西':{const t=await choose(i,{title:'聲東擊西：讓誰本回合不能收情報？',options:playerOpts(others)},()=>G.transit.target!==i?G.transit.target:others[0]);
+   coverRole(i,'聲東擊西');G.tigers.add(t);UI.arrow(i,t,'tiger');UI.fx('tiger',t);log(`${pname(t)} 被調虎離山：本回合不能接收情報。`,'fx');break;}
+  case '合金裝備':G.armor={i,uids:[]};log(`本回合 ${pname(i)} 不會因黑情報死亡；回合結束時燒毀本回合獲得的黑情報。`,'fx');break;
+  case '愛情':{P.idOpen=true;log(`${pname(i)} 翻開身份牌：【${P.identity}】。`,'fx');aliveList().forEach(k=>AI.learn(k,i,[P.identity]));
+   const bt=blackTargets();const picks=await choose(i,{title:'愛情：燒毀場上最多三張黑情報',options:bt.map((b,k)=>({label:`${pname(b.owner)}・${cdesc(G.players[b.owner].intel.find(x=>x.uid===b.uid))}`,value:k})),min:0,max:Math.min(3,bt.length)},()=>AI.loveBurn(i,bt));
+   for(const k of (Array.isArray(picks)?picks:[]))await burnIntel(bt[k].owner,bt[k].uid);break;}
+  case '仇恨':{G.discard.push(...P.hand);log(`${pname(i)} 棄掉所有手牌。`);P.hand=[];const bl=P.intel.filter(c=>isK(c.color));
+   const uid=await choose(i,{title:'仇恨：移走自己面前哪張黑情報？',options:cardOpts(bl)},()=>bl[0].uid);const males=others.filter(j=>isMale(j));
+   const t=await choose(i,{title:'仇恨：放到哪位男性角色面前？',options:playerOpts(males)},()=>AI.blackTarget(i,males)??males[0]);
+   const c=takeUid(P.intel,uid);UI.arrow(i,t,'burn');if(c)await receiveIntel(t,c,{by:i,src:'skill'});break;}
+ }
+ UI.render();checkWin();}
+
 const AI={
  friend(i,j){if(i===j)return 1;const me=G.players[i],o=G.players[j];
   if(o.revealed&&(!o.alive||o.lost))return o.identity===me.identity&&me.identity!=='醬油'?1:-1;
@@ -1179,7 +1299,47 @@ const AI={
  _probeInfo(){return true;},
  _probeResult(){return true;},
  _role(i,req){return req.opts[Math.floor(Math.random()*2)];},
- _pass(i){const b=this.bestPass(i);return {card:b.card,target:b.card.trans==='d'?b.target:null};},
+ _pass(i){const ps=passSkills(i);const b0=this.bestPass(i);const en=aliveList().filter(j=>j!==i&&this.friend(i,j)<-0.2&&blacks(G.players[j])>=1);
+  if(ps.includes('殺意')&&en.length&&blacks(G.players[i])>=1)return {skill:'殺意'};
+  if(ps.includes('黑色之吻')&&en.some(j=>!G.locks.has(j)&&blacks(G.players[j])>=1)&&Math.random()<0.7)return {skill:'黑色之吻'};
+  const b=b0;return {card:b.card,target:b.card.trans==='d'?b.target:null};},
+ skillPlay(i,ctx){const av=activeSkills(i,ctx);if(!av.length)return null;const P=G.players[i],tr=G.transit,my=this.myColor(i),en=this.enemyColor(i);
+  const danger=aliveList().filter(j=>j!==i&&this.friend(i,j)<-0.2&&en&&(G.players[i].identity==='潛伏'?blues(G.players[j]):reds(G.players[j]))>=2);
+  const has=n=>av.includes(n);const R=Math.random();
+  if(has('警覺')){const top=G.stack[G.stack.length-1];if(top&&top.pi!==i&&(top.target===i||(top.as==='counter'&&G.stack[top.target]&&G.stack[top.target].pi===i))&&R<0.7)return '警覺';}
+  if(has('合金裝備')&&blacks(P)>=2&&tr&&tr.target===i&&(G.locks.has(i)||tr.forcedTo===i))return '合金裝備';
+  if(has('狙擊')&&danger.length)return '狙擊';
+  if(has('點射')&&(danger.length||blacks(P)>=2))return '點射';
+  if(has('潛藏伏擊')&&danger.length)return '潛藏伏擊';
+  if(has('愛情')&&blackTargets().some(b=>blacks(G.players[b.owner])>=2&&this.friend(i,b.owner)>0.3))return '愛情';
+  if(has('截上截')&&tr&&(tr.faceUp||tr.seenBy.has(i))&&this.selfAccept(i,tr.card)>2)return '截上截';
+  if(has('速譯')&&tr&&(tr.target===i||tr.target===nextAlive(i))&&R<0.5)return '速譯';
+  if(has('揭露')&&tr&&P.hand.length>=3&&R<0.4)return '揭露';
+  if(has('聲東擊西')&&tr&&tr.faceUp&&tr.target!==i&&this.friend(i,tr.target)<0&&this.gain(i,tr.target,tr.card)<-3&&!G.locks.has(tr.target))return '聲東擊西';
+  if(has('螳螂捕蟬')&&tr&&(tr.faceUp||tr.seenBy.has(i))&&isK(tr.card.color)&&this.friend(i,tr.target)<0&&blacks(G.players[tr.target])>=1&&!G.locks.has(tr.target))return '螳螂捕蟬';
+  if(ctx.kind!=='ownPlay'&&ctx.kind!=='otherPlay')return null;
+  if(has('血染玫瑰')&&P.hand.some(c=>isK(c.color))&&aliveList().some(j=>j!==i&&this.friend(i,j)<-0.2&&blacks(G.players[j])>=1))return '血染玫瑰';
+  if(has('先機')&&R<0.4)return '先機';
+  if(has('收買')&&P.hand.length>=6&&my&&othersWithIntel(i).some(j=>G.players[j].intel.some(c=>my(c.color))))return '收買';
+  if(has('出賣')&&en&&P.intel.filter(c=>en(c.color)&&!isK(c.color)).length>=2&&my&&othersWithIntel(i).some(j=>G.players[j].intel.some(c=>my(c.color))))return '出賣';
+  if(has('仇恨')&&blacks(P)>=2&&P.hand.length<=2&&aliveList().some(j=>j!==i&&isMale(j)&&this.friend(i,j)<0))return '仇恨';
+  if(has('犧牲')&&blacks(P)===0&&P.hand.length<=2&&R<0.3)return '犧牲';
+  if(has('天衣無縫')&&P.hand.filter(c=>['lock','probe','gamble'].includes(c.type)).length>=2&&R<0.5)return '天衣無縫';
+  if(has('冷血')&&P.hand.length>=4&&aliveList().some(j=>j!==i&&this.friend(i,j)<-0.2&&blacks(G.players[j])>=1)&&R<0.4)return '冷血';
+  if(has('加密')&&R<0.25)return '加密';
+  if(has('合謀')&&R<0.15)return '合謀';
+  if(has('詭計')&&P.identity==='醬油'&&R<0.4)return '詭計';
+  return null;},
+ unknownPick(i,cand){const u=cand.filter(j=>!G.players[i].mem.known[j]);return (u.length?u:cand)[Math.floor(Math.random()*(u.length||cand.length))];},
+ snipeTarget(i,cand){const en=this.enemyColor(i);return cand.sort((a,b)=>(en?G.players[b].intel.filter(c=>en(c.color)).length-G.players[a].intel.filter(c=>en(c.color)).length:0))[0];},
+ snipeCards(i,t){const en=this.enemyColor(i),I=G.players[t].intel;const f=this.friend(i,t);return I.slice().sort((a,b)=>f>0?(isK(b.color)-isK(a.color)):((en&&en(b.color)?1:0)-(en&&en(a.color)?1:0))).slice(0,3);},
+ pickFieldIntel(i,ids){let best=null;for(const j of ids)for(const c of G.players[j].intel){const f=this.friend(i,j);const en=this.enemyColor(i);const v=f>0||j===i?(isK(c.color)?3:0):(en&&en(c.color)?3:0);if(!best||v>best.v)best={v,val:j+':'+c.uid};}return best.val;},
+ lockPick(i,cand){return this.blackTarget(i,cand)??cand[0];},
+ buyTarget(i,cand){const my=this.myColor(i);return cand.find(j=>G.players[j].intel.some(c=>my&&my(c.color)))??cand[0];},
+ sellCards(i,rb){const en=this.enemyColor(i);return rb.slice().sort((a,b)=>(en&&en(b.color)?1:0)-(en&&en(a.color)?1:0)).slice(0,2);},
+ pickGainIntel(i,cand){let best=null;for(const j of cand)for(const c of G.players[j].intel){const v=this.selfAccept(i,c);if(!best||v>best.v)best={v,val:j+':'+c.uid};}return best.val;},
+ loveBurn(i,bt){return bt.map((b,k)=>({k,f:this.friend(i,b.owner)+(b.owner===i?1:0)})).filter(x=>x.f>0).slice(0,3).map(x=>x.k);},
+ blackPassCard(i,bl){return bl.slice().sort((a,b)=>this.cardCost(a)-this.cardCost(b))[0];},
  pickRole(i,two){return two[Math.floor(Math.random()*2)];},
  cardVal(i,c){return this.cardCost(c)+(this.myColor(i)&&this.myColor(i)(c.color)?0.3:0);},
  worstCard(i){const H=G.players[i].hand;return H.slice().sort((a,b)=>this.cardVal(i,a)-this.cardVal(i,b))[0];},
@@ -1216,7 +1376,7 @@ const AI={
  _discard(i){const P=G.players[i];return P.hand.slice().sort((a,b)=>this.cardCost(a)-this.cardCost(b))[0];},
  _decryptColor(){return 'k';},
  _decryptReveal(i){return true;},
- _play(i,req){const ctx=req.ctx,P=G.players[i];const PL=legalPlays(i,ctx);if(!PL.length)return null;
+ _play(i,req){const ctx=req.ctx,P=G.players[i];const sk=this.skillPlay(i,ctx);if(sk)return {skill:sk};const PL=legalPlays(i,ctx);if(!PL.length)return null;
   const has=t=>PL.find(p=>p.as===t&&!(t==='lock'&&false));const me=P;
   const pl=(p,target)=>({card:p.card,as:p.as,target});
   const burn=has('burn');
@@ -1250,7 +1410,7 @@ const AI={
    return null;}
   return null;},
  respond(i,PL){const ctp=PL.find(p=>p.as==='counter');if(!ctp)return null;const ct=ctp.card;
-  const top=G.stack[G.stack.length-1];const idx=G.stack.length-1;if(!top)return null;
+  const top=G.stack[G.stack.length-1];const idx=G.stack.length-1;if(!top||top.noCounter)return null;
   const f=this.friend(i,top.pi);if(f>0.4)return null;
   const P=G.players[i];const t=top.as;let p=0;
   if(t==='counter'){const tg=G.stack[top.target];if(tg&&(tg.pi===i||this.friend(i,tg.pi)>0.5))p=0.7;}
@@ -1317,9 +1477,9 @@ const Net={role:'solo',code:null,me:null,conns:new Map(),hostConn:null,lobby:[],
    this.pend.set(id,{seat:i,res,timer});try{p.conn.send({t:'ask',id,req:Object.assign({},req,{_timer:SET.timer})});}catch(e){clearTimeout(timer);this.pend.delete(id);res(undefined);}});},
  view(v){const tr=G.transit;const vis=tr&&(tr.faceUp||tr.seenBy.has(v));
   return {me:v,gen:G.gen,turn:G.turn,round:G.round,phase:G.phase,step:G.step,priority:G.priority,over:G.over,result:G.result,winners:G.winners,deaths:G.deaths,
-   deckN:G.deck.length,discN:G.discard.length,stack:G.stack.map(it=>({pi:it.pi,card:it.card,as:it.as,target:it.target,negated:it.negated})),
+   deckN:G.deck.length,discN:G.discard.length,stack:G.stack.map(it=>({pi:it.pi,card:it.card,as:it.as,target:it.target,negated:it.negated,noCounter:!!it.noCounter})),
    transit:tr?{sender:tr.sender,method:tr.method,faceUp:tr.faceUp,target:tr.target,card:vis?tr.card:null,forcedTo:tr.forcedTo,interceptor:tr.interceptor,seenBy:tr.seenBy.has(v)?[v]:[]}:null,
-   locks:[...G.locks],tigers:[...G.tigers],
+   locks:[...G.locks],tigers:[...G.tigers],tianyi:G.tianyi,encrypt:G.encrypt,lengxue:G.lengxue,armor:G.armor?{i:G.armor.i}:null,
    players:G.players.map((p,i)=>{const own=i===v,showRole=own||p.roleUp||p.revealed;
     return {name:p.name,ctrl:p.ctrl,online:p.online,human:p.human,identity:(own||p.revealed||p.idOpen)?p.identity:undefined,idOpen:p.idOpen,
      role:showRole?p.role:null,roleHidden:!!(R(i)&&R(i).hidden),hand:own?p.hand:p.hand.map(()=>({uid:0,hidden:1})),intel:p.intel,
@@ -1434,14 +1594,14 @@ const UI={
    if(rq.type==='discard'){this.resolve(c);return;}
    if(rq.type==='pass'){if(c.trans==='d'){this.sel={card:c,players:aliveList().filter(j=>j!==ME),mode:'pass'};this.render();}else this.resolve({card:c,target:null});return;}
    if(rq.type==='play'){const plays=legalPlays(ME,rq.ctx).filter(x=>x.card.uid===uid);
-    if(plays.length>1){this.sel={card:c,plays};this.render();return;}if(plays.length){this.startPlay(c,plays[0].as);return;}}}
+    if(plays.length>1){this.sel={card:c,plays};this.render();return;}if(plays.length){this.startPlay(c,plays[0].as,plays[0].via);return;}}}
   this.cardPop(c);},
- startPlay(c,as){this.sel={card:c,as};
+ startPlay(c,as,via){this.sel={card:c,as,via};
   if(as==='burn'){this.sel.burn=blackTargets();this.render();return;}
-  if(as==='counter'){const ks=G.stack.map((_,k)=>k);if(ks.length===1){this.resolve({card:c,as,target:0});return;}this.sel.counter=ks.reverse();this.render();return;}
+  if(as==='counter'){const ks=G.stack.map((it,k)=>it.noCounter?-1:k).filter(k=>k>=0);if(ks.length===1){this.resolve({card:c,as,target:ks[0]});return;}this.sel.counter=ks.reverse();this.render();return;}
   const pts=playerTargets(ME,as);if(pts){this.sel.players=pts;this.render();return;}
-  this.resolve({card:c,as,target:null});},
- finishPlay(t){const {card,as}=this.sel;this.resolve({card,as,target:t});},
+  this.resolve({card:c,as,via,target:null});},
+ finishPlay(t){const {card,as,via}=this.sel;this.resolve({card,as,via,target:t});},
  /* ---------- prompts ---------- */
  humanAsk(req){return new Promise(res=>{
   const noT=['probeInfo','probeResult','role','info'].includes(req.type);const sec=noT?0:(req._timer!=null?req._timer:SET.timer);
@@ -1463,17 +1623,17 @@ const UI={
   if(!p){box.className='idle';box.innerHTML=G.over?'':`<div class="wait">${G.phase==='準備'?'等待其他玩家選角…':'等待 '+esc(this.waitingFor())}</div>`;return;}
   const rq=p.req,me=this.me();if(rq.type==='role'){box.className='idle';box.innerHTML='';this.renderGacha();return;}
   let title='',body='',btns='';const B=(id,t,c='')=>`<button data-act="${id}" class="${c}">${t}</button>`;
-  if(this.sel&&this.sel.plays){title=`【${cname(this.sel.card)}】要當成？`;btns=this.sel.plays.map(x=>B('as:'+x.as,CT[x.as].name,'pri')).join('')+B('cancel','取消','ghost');}
+  if(this.sel&&this.sel.plays){title=`【${cname(this.sel.card)}】要當成？`;btns=this.sel.plays.map(x=>B('as:'+x.as+(x.via?':'+x.via:''),CT[x.as].name+(x.via?'（'+x.via+'）':''),'pri')).join('')+B('cancel','取消','ghost');}
   else if(this.sel&&this.sel.card){const c=this.sel.card;title=this.sel.mode==='pass'?'直達：傳給誰？':`【${CT[this.sel.as].name}】選目標`;
    if(this.sel.players)body=`<div class="opts">${this.sel.players.map(j=>B('pt'+j,esc(pname(j)))).join('')}</div><p class="hint">也可以直接點牌桌上的玩家</p>`;
    if(this.sel.burn)body=`<div class="opts">${this.sel.burn.map((b,k)=>B('bt'+k,`${esc(pname(b.owner))}・${COL_TXT[G.players[b.owner].intel.find(x=>x.uid===b.uid).color]}`)).join('')}</div>`;
    if(this.sel.counter)body=`<div class="opts">${this.sel.counter.map(k=>B('ct'+k,`${esc(pname(G.stack[k].pi))}【${CT[G.stack[k].as].name}】`)).join('')}</div>`;
    btns=B('cancel','取消','ghost');}
   else switch(rq.type){
-   case 'play':{title=this.ctxTitle(rq.ctx);const L=legalCards(ME,rq.ctx);
-    body=`<p class="hint">可用：${L.length?[...new Set(L.map(c=>cname(c)))].join('、'):'無'}（點發光的手牌）</p>`;
+   case 'play':{title=this.ctxTitle(rq.ctx);const L=legalCards(ME,rq.ctx);const SK=activeSkills(ME,rq.ctx);
+    body=`<p class="hint">可用：${L.length?[...new Set(L.map(c=>cname(c)))].join('、'):'無'}（點發光的手牌）</p>`+(SK.length?`<div class="skrow">技能：${SK.map(n=>{const s=skillDef(ME,n);return B('sk:'+n,n,'skb sk-'+s.c);}).join('')}</div>`:'');
     btns=B('pass',rq.ctx.kind==='ownPlay'||rq.ctx.kind==='otherPlay'?'結束出牌':'不用','ghost');break;}
-   case 'pass':title='選一張牌傳出';body='<p class="hint">密電、文本傳給下一位；直達可指定對象</p>';btns=B('auto','幫我選','ghost');break;
+   case 'pass':{title='選一張牌傳出';const PS=passSkills(ME);body='<p class="hint">密電、文本傳給下一位；直達可指定對象</p>'+(PS.length?`<div class="skrow">技能：${PS.map(n=>B('sk:'+n,n,'skb sk-Y')).join('')}</div>`:'');btns=B('auto','幫我選','ghost');break;}
    case 'accept':{const tr=G.transit;const vis=tr.card&&(tr.faceUp||tr.seenBy.has(ME));title='收下這張情報？';
     body=`<div class="acc">${vis?this.card(tr.card):this.back(tr.method)}<p>來自 ${esc(pname(tr.sender))}<br>你的黑情報：<b class="${blacks(me)>=2?'danger':''}">${blacks(me)} / 3</b>${blacks(me)>=2?'<br><b class="danger">再收黑的會陣亡</b>':''}</p></div>`;
     btns=B('yes','收','pri')+B('no','不收');break;}
@@ -1499,7 +1659,8 @@ const UI={
   if(a.startsWith('pt')){this.finishPlay(+a.slice(2));return;}
   if(a.startsWith('bt')){this.finishPlay(this.sel.burn[+a.slice(2)]);return;}
   if(a.startsWith('ct')){this.finishPlay(+a.slice(2));return;}
-  if(a.startsWith('as:')){this.startPlay(this.sel.card,a.slice(3));return;}
+  if(a.startsWith('as:')){const [,as,via]=a.split(':');this.startPlay(this.sel.card,as,via);return;}
+  if(a.startsWith('sk:')){this.resolve({skill:a.slice(3)});return;}
   if(a.startsWith('c:')){this.resolve(a.slice(2));return;}
   if(a.startsWith('opt:')){const k=+a.slice(4);if(rq.max>1){if(this.multi.has(k))this.multi.delete(k);else if(this.multi.size<rq.max)this.multi.add(k);this.renderPrompt();}else this.resolve(rq.options[k].value);return;}
   switch(a){case 'confirm':if(this.multi.size>=rq.min)this.resolve([...this.multi].map(k=>rq.options[k].value));break;
