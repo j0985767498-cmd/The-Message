@@ -218,6 +218,96 @@ button.cr{background:var(--red);color:#fff;border-color:var(--red)}button.cb{bac
  .an .card.big{width:86px;min-height:0;height:120px;font-size:11px;}.an .card.big .c-fx{display:none;}.an .card.big .c-art{min-height:0;}
  .an-skill img{width:52px;height:70px;}.an-pass{font-size:1.5em;}.an-neg{font-size:1.7em;}#banner b{font-size:1.8em;}}
 #prompt.idle{bottom:auto;top:6px;}
+/* ===== refined cards ===== */
+.card{border:0;border-radius:9px;background:
+ radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,.55),transparent 60%),
+ repeating-linear-gradient(0deg,rgba(120,90,40,.035) 0 2px,transparent 2px 4px),
+ linear-gradient(160deg,#f6ecd2,#e6d4ad);
+ box-shadow:0 0 0 1px #8c6a33,0 0 0 3px #e9d7a8,0 0 0 4px #6b4d22,0 4px 12px rgba(0,0,0,.45);}
+.card::before{content:"";position:absolute;inset:3px;border:1px solid rgba(140,106,51,.55);border-radius:6px;pointer-events:none;z-index:1;}
+.orn{position:absolute;width:9px;height:9px;border:2px solid #b08a45;z-index:2;pointer-events:none;}
+.orn.tl{top:2px;left:2px;border-right:0;border-bottom:0;border-radius:4px 0 0 0;}.orn.tr2{top:2px;right:2px;border-left:0;border-bottom:0;border-radius:0 4px 0 0;}
+.orn.bl{bottom:2px;left:2px;border-right:0;border-top:0;border-radius:0 0 0 4px;}.orn.br{bottom:2px;right:2px;border-left:0;border-top:0;border-radius:0 0 4px 0;}
+.card .c-top{margin:4px 4px 0;border-radius:5px 5px 2px 2px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.25);text-shadow:0 1px 2px rgba(0,0,0,.6);position:relative;z-index:1;}
+.card .c-top .c-name{letter-spacing:.08em;}
+.c-art{position:relative;margin:3px 6px 0;border-radius:4px;border:1px solid rgba(107,77,34,.45);background:radial-gradient(circle at 50% 45%,rgba(255,240,200,.9),rgba(201,164,92,.35) 70%,rgba(120,85,40,.35));box-shadow:inset 0 0 10px rgba(80,55,20,.35);overflow:hidden;}
+.c-art .cimg{width:100%;height:100%;object-fit:cover;display:block;}
+.c-art .c-col{position:absolute;right:2px;bottom:2px;font-size:.66em;font-weight:700;color:#fff;padding:0 4px;border-radius:3px;background:rgba(0,0,0,.55);}
+.card.col-r .c-art .c-col{background:var(--red)}.card.col-b .c-art .c-col{background:var(--blue)}.card.col-rk .c-art .c-col{background:linear-gradient(120deg,var(--red) 55%,#111 55%)}.card.col-bk .c-art .c-col{background:linear-gradient(120deg,var(--blue) 55%,#111 55%)}
+.c-fx{position:relative;z-index:1;margin:2px 6px 5px;padding-top:2px;border-top:1px solid rgba(107,77,34,.35);text-align:center;}
+.gloss{position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 45%,transparent 60%);transform:translateX(-120%);pointer-events:none;z-index:3;}
+#hand .card.legal .gloss,.an .gloss{animation:gloss 2.2s infinite;}@keyframes gloss{0%{transform:translateX(-120%)}60%,100%{transform:translateX(120%)}}
+.card.back{box-shadow:0 0 0 1px #c9a45c,0 0 0 3px #3b2a1a,0 4px 12px rgba(0,0,0,.45);}
+.card.back::before{border-color:rgba(201,164,92,.5);}
+/* ===== arrows ===== */
+.arw path{fill:none;stroke:#ffd27a;stroke-width:4;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;filter:drop-shadow(0 0 4px rgba(255,210,122,.8));animation:draw .5s ease-out forwards,fadep 2.6s forwards;}
+.arw text{fill:#fff3d6;font-size:13px;font-weight:700;text-anchor:middle;paint-order:stroke;stroke:#1b140a;stroke-width:3px;animation:fadep 2.6s forwards;}
+@keyframes draw{to{stroke-dashoffset:0}}
+.arw.a-counter path{stroke:#ff6b5e;filter:drop-shadow(0 0 5px #ff6b5e);}.arw.a-burn path{stroke:#ff9d2e;filter:drop-shadow(0 0 6px #ff7a00);}
+.arw.a-lock path{stroke:#ff8a7f;}.arw.a-probe path{stroke:#9fd3ff;}.arw.a-tiger path{stroke:#b9c4cc;}.arw.a-transfer path{stroke:#ff8a5c;}.arw.a-gamble path{stroke:#d7a7ff;}
+.path line{stroke-width:3px;}
+/* ===== target hit ===== */
+.seat.hit{animation:hitp .9s;}@keyframes hitp{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(-50%,-50%) scale(1.12)}}
+.seat.hit-lock::after{content:"🔒";}.seat.hit-burn::after{content:"🔥";}.seat.hit-probe::after{content:"🔍";}.seat.hit-tiger::after{content:"🌫";}.seat.hit-gamble::after{content:"🎲";}.seat.hit-transfer::after{content:"✉";}.seat.hit-counter::after{content:"✖";color:#ff6b5e;}
+.seat.hit::after{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:2.2em;animation:stamp .9s forwards;pointer-events:none;text-shadow:0 0 12px #000;}
+@keyframes stamp{0%{opacity:0;transform:translate(-50%,-50%) scale(3)}25%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
+/* ===== card-specific announce effects ===== */
+.an-card{position:relative;}.an-card .ov{position:absolute;inset:0;pointer-events:none;}
+.fx-lock .ov::before{content:"";position:absolute;inset:-6px;border:4px dashed #e05a4f;border-radius:12px;animation:lockin .5s ease-out;}
+.fx-lock .ov::after{content:"🔒";position:absolute;right:-14px;top:-16px;font-size:2.2em;animation:slam .45s cubic-bezier(.3,1.6,.5,1);}
+@keyframes lockin{from{inset:-40px;opacity:0}}@keyframes slam{from{transform:scale(3) rotate(-20deg);opacity:0}}
+.fx-burn .ov{background:linear-gradient(0deg,rgba(255,120,0,.75),rgba(255,200,0,.25) 40%,transparent 70%);mix-blend-mode:screen;animation:flame .25s infinite alternate;border-radius:9px;}
+@keyframes flame{from{opacity:.6;transform:scaleY(.95)}to{opacity:1;transform:scaleY(1.05)}}
+.fx-counter .card{animation:counterfx .6s;}.fx-counter .ov::after{content:"";position:absolute;inset:0;border-radius:9px;box-shadow:0 0 0 3px #ff6b5e,0 0 30px #ff6b5e;animation:fadep 1.4s forwards;}
+@keyframes counterfx{0%{transform:scale(1.4);filter:brightness(2)}100%{transform:none}}
+.fx-intercept .card{animation:grab .6s ease-out;}@keyframes grab{0%{transform:translateX(120px) rotate(18deg);opacity:0}70%{transform:translateX(-10px) rotate(-4deg)}100%{transform:none}}
+.fx-swap .card{animation:swapc .8s;}@keyframes swapc{0%{transform:rotateY(180deg)}100%{transform:none}}
+.fx-tiger .ov{background:radial-gradient(circle,rgba(220,220,220,.7),transparent 70%);animation:smoke 1.2s forwards;border-radius:50%;}@keyframes smoke{0%{transform:scale(.3);opacity:1}100%{transform:scale(2);opacity:0}}
+.fx-decrypt .ov{background:linear-gradient(180deg,transparent 45%,rgba(120,255,200,.75) 50%,transparent 55%);background-size:100% 200%;animation:scan 1s linear 2;border-radius:9px;}@keyframes scan{from{background-position:0 100%}to{background-position:0 -100%}}
+.fx-transfer .card{animation:zoomoff 1s;}@keyframes zoomoff{0%{transform:translateX(-80px);opacity:0}60%{transform:translateX(8px)}100%{transform:none}}
+.fx-gamble .card{animation:dice .7s;}@keyframes dice{0%{transform:rotate(-360deg) scale(.4)}100%{transform:none}}
+.fx-dzm .card{animation:wob .9s;}@keyframes wob{20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(3deg)}}
+.fx-probe .ov::after{content:"🔍";position:absolute;font-size:2.4em;animation:sweep 1.2s ease-in-out;left:10%;top:30%;}@keyframes sweep{0%{left:-10%;top:60%}50%{left:60%;top:10%}100%{left:30%;top:35%}}
+.fx-balance .card{animation:tilt 1s;}@keyframes tilt{25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+.fx-reinforce .card{animation:rise .7s;}@keyframes rise{from{transform:translateY(60px);opacity:0}}
+.fx-public .card{animation:unfold .7s;}@keyframes unfold{from{transform:scaleY(.1)}}
+.an-card .as{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);white-space:nowrap;background:#1b140a;padding:0 8px;border-radius:6px;}
+.an p .to{color:#ffd27a;font-weight:700;}
+.gainfx .card{animation:gainc .6s cubic-bezier(.2,1.5,.4,1);}@keyframes gainc{from{transform:translateY(-60px) scale(.5);opacity:0}}
+.colw{display:inline-block;margin:0 4px;padding:0 6px;border-radius:4px;color:#fff;font-weight:700;}.colw.col-r{background:var(--red)}.colw.col-b{background:var(--blue)}.colw.col-k{background:#111;border:1px solid #777}.colw.col-rk{background:linear-gradient(120deg,var(--red) 55%,#111 55%)}.colw.col-bk{background:linear-gradient(120deg,var(--blue) 55%,#111 55%)}
+/* shatter */
+.shatter{width:150px;height:200px;}.shatter .half{position:absolute;inset:0;}.shatter .half .card{width:150px;min-height:200px;}
+.shatter .half.l{clip-path:polygon(0 0,52% 0,46% 21%,58% 37%,40% 56%,55% 74%,48% 100%,0 100%);animation:brkl 1.1s .25s forwards;}
+.shatter .half.r{clip-path:polygon(52% 0,100% 0,100% 100%,48% 100%,55% 74%,40% 56%,58% 37%,46% 21%);animation:brkr 1.1s .25s forwards;}
+@keyframes brkl{to{transform:translate(-50px,30px) rotate(-18deg);opacity:0}}@keyframes brkr{to{transform:translate(50px,40px) rotate(16deg);opacity:0}}
+.crack{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 0 4px #ff6b5e);stroke-dasharray:200;stroke-dashoffset:200;animation:draw .25s forwards,fadep 1.3s forwards;}
+.neg-t{font-family:"LXGW WenKai TC",serif;font-size:2em!important;color:#ff6b5e;animation:crack .5s;}
+/* skill cinematic */
+#cine{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:0;z-index:11;pointer-events:none;overflow:visible;}
+#cine .strip{position:absolute;left:0;right:0;top:50%;height:clamp(70px,26%,150px);transform:translateY(-50%) scaleY(0);display:flex;align-items:center;justify-content:center;gap:16px;overflow:hidden;
+ background:linear-gradient(90deg,transparent,rgba(10,8,6,.92) 15%,rgba(10,8,6,.92) 85%,transparent);border-top:2px solid var(--cc);border-bottom:2px solid var(--cc);box-shadow:0 0 30px var(--cc);}
+#cine.go .strip{animation:cinein .3s ease-out forwards;}
+@keyframes cinein{to{transform:translateY(-50%) scaleY(1)}}
+#cine img{height:110%;aspect-ratio:3/4;object-fit:cover;border:2px solid var(--cc);border-radius:6px;animation:slidein .45s cubic-bezier(.2,1.2,.4,1);}
+#cine .txt{display:flex;flex-direction:column;animation:slidein2 .5s cubic-bezier(.2,1.2,.4,1);}
+#cine small{color:#d8ccb0;}#cine b{font-family:"LXGW WenKai TC",serif;font-size:clamp(28px,5vw,58px);color:#fff;text-shadow:0 0 16px var(--cc),0 0 4px var(--cc);letter-spacing:.15em;}
+#cine em{font-style:normal;color:#1b140a;background:linear-gradient(90deg,#ffd27a,#fff3c4,#ffd27a);padding:0 10px;border-radius:4px;font-weight:700;width:max-content;letter-spacing:.3em;}
+#cine .sweep{position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);animation:sw .9s .2s;transform:translateX(-100%);}
+@keyframes sw{to{transform:translateX(100%)}}@keyframes slidein{from{transform:translateX(-160px);opacity:0}}@keyframes slidein2{from{transform:translateX(160px);opacity:0}}
+#cine.c-B{--cc:#4a86e8}#cine.c-R{--cc:#e0483f}#cine.c-Y{--cc:#ffc53d}#cine.ult .strip{height:clamp(90px,34%,190px);}
+#cine:not(.go){display:none;}
+#table.shake{animation:tshake .5s;}@keyframes tshake{20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-1px)}}
+/* misc fixes */
+#pop{z-index:90;}
+.gsk{display:block;max-height:22vh;overflow:auto;text-align:left;font-size:.82em;width:100%;}.gsk p{margin:0 0 4px;}.gsk .gm{color:#ffd27a;}.gsk .gm b{margin-right:4px;}
+@media (max-height:520px){.gsk{max-height:26vh;}}
+#prompt.collapsed{bottom:auto;top:6px;width:auto;max-width:70%;}
+.mycnt{margin:2px 0;}.mycnt span{min-width:1.6em;}
+@media (max-height:520px),(max-width:620px){.shatter{width:86px;height:120px;}.shatter .half .card{width:86px;min-height:120px;height:120px;font-size:11px;}.shatter .half .card .c-fx{display:none;}}
+.an.an-neg{font-size:inherit;animation:none;}
+.an.an-pass{font-size:inherit;padding:12px 22px;background:rgba(8,14,12,.86);color:#f3e8cf;border-radius:14px;}
+@media (max-height:520px),(max-width:620px){.an.an-pass{padding:6px 12px;}}
+.arw path{stroke-width:6;}
 </style>
 </head>
 <body>
@@ -229,7 +319,7 @@ button.cr{background:var(--red);color:#fff;border-color:var(--red)}button.cb{bac
  </header>
  <section id="table" aria-label="牌桌">
   <div id="center"><div id="phaseLabel">準備中</div><div class="piles"><span>牌庫 <b id="deckN">0</b></span><span>棄牌 <b id="discN">0</b></span></div><div id="stack"></div></div>
-  <svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <svg id="arrows" aria-hidden="true"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0L10 5L0 10L3 5z" fill="#ffd27a"/></marker><marker id="ah2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" fill="#e8d6a6"/></marker></defs></svg>
   <div id="seats"></div>
   <div id="transit" class="hide"></div>
   <div id="banner"></div>
@@ -437,8 +527,8 @@ function cardArt(type){return `<svg class="art" viewBox="0 0 64 48" aria-hidden=
 const AUDIO={ctx:null,master:null,sfxOn:true,musicOn:true,bgm:null,
  init(){if(this.ctx)return;try{const C=window.AudioContext||window.webkitAudioContext;this.ctx=new C();this.master=this.ctx.createGain();this.master.gain.value=0.7;this.master.connect(this.ctx.destination);
   const len=this.ctx.sampleRate;this.noiseBuf=this.ctx.createBuffer(1,len,this.ctx.sampleRate);const d=this.noiseBuf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;}catch(e){this.ctx=null;}
-  try{const s=JSON.parse(localStorage.getItem('fs-audio')||'{}');if(s.sfx===false)this.sfxOn=false;if(s.music===false)this.musicOn=false;}catch(e){}},
- save(){try{localStorage.setItem('fs-audio',JSON.stringify({sfx:this.sfxOn,music:this.musicOn}));}catch(e){}},
+  try{const s=JSON.parse(localStorage.getItem('fs-audio')||'{}');if(s.sfx===false)this.sfxOn=false;if(s.music===false)this.musicOn=false;if(s.style)this.style=s.style;}catch(e){}},
+ save(){try{localStorage.setItem('fs-audio',JSON.stringify({sfx:this.sfxOn,music:this.musicOn,style:this.style}));}catch(e){}},
  resume(){if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume();},
  t(){return this.ctx.currentTime;},
  env(g,t0,a,peak,d){g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(peak,t0+a);g.gain.exponentialRampToValueAtTime(0.0001,t0+a+d);},
@@ -470,7 +560,9 @@ const AUDIO={ctx:null,master:null,sfxOn:true,musicOn:true,bgm:null,
   accept(t){this.tone('sine',120,t,0.25,0.35,70);this.noise(t,0.06,0.25,'lowpass',1200);},
   reject(t){this.noise(t,0.25,0.15,'bandpass',2200,700,1);},
   death(t){this.noise(t,0.25,0.5,'lowpass',3000,200,0.5);this.tone('sine',70,t,1.2,0.4,40);[220,262,311].forEach(f=>this.tone('triangle',f,t+0.3,1.4,0.04));},
-  skill(t){[784,988,1175,1568].forEach((f,k)=>{this.tone('sine',f,t+k*0.06,0.5,0.06);this.tone('sine',f*1.005,t+k*0.06+0.02,0.5,0.03);});},
+  ult(t){this.noise(t,0.6,0.25,'bandpass',300,4000,1.5);this.tone('sawtooth',55,t,1.2,0.12,110);[392,523,659,784,1047].forEach((f,k)=>this.tone('triangle',f,t+0.25+k*0.05,1.1,0.07));this.noise(t+0.25,0.9,0.06,'highpass',7000);},
+  shatter(t){this.noise(t,0.5,0.35,'highpass',2500);[2600,3300,4100,5200,3700].forEach((f,k)=>this.tone('sine',f,t+k*0.035,0.45,0.05));this.tone('square',90,t,0.15,0.08,40);},
+  skill(t){this.noise(t,0.35,0.18,'bandpass',600,5000,1.2);this.tone('sawtooth',110,t,0.5,0.06,220);[784,988,1175,1568].forEach((f,k)=>{this.tone('sine',f,t+k*0.06,0.5,0.06);this.tone('sine',f*1.005,t+k*0.06+0.02,0.5,0.03);});},
   myturn(t){this.tone('sine',880,t,0.9,0.12);this.tone('sine',1320,t,0.6,0.05);this.tone('sine',1760,t+0.01,0.4,0.03);},
   tick(t){this.tone('square',1500,t,0.03,0.04);},
   win(t){[523,659,784,1047].forEach((f,k)=>this.tone('triangle',f,t+k*0.14,0.6,0.12));},
@@ -479,21 +571,44 @@ const AUDIO={ctx:null,master:null,sfxOn:true,musicOn:true,bgm:null,
   click(t){this.tone('triangle',600,t,0.04,0.05);}
  },
  /* ---- background music: slow noir loop ---- */
+ style:1,
  startMusic(){if(!this.ctx||!this.musicOn||this.bgm)return;this.resume();
   const bus=this.ctx.createGain();bus.gain.value=0.0001;bus.connect(this.master);bus.gain.exponentialRampToValueAtTime(0.5,this.t()+3);
   const lp=this.ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;lp.connect(bus);
-  const bpm=66,beat=60/bpm;const chords=[[57,60,64,67,71],[50,53,57,60,64],[52,56,59,62,65],[57,60,64,67,72]];const bass=[[45,48,52,55],[38,41,45,48],[40,44,47,50],[45,52,48,47]];
-  const mf=m=>440*Math.pow(2,(m-69)/12);let next=this.t()+0.1,step=0;const self=this;
-  const pad=(f,t0,dur)=>{for(const det of [-4,4]){const o=self.ctx.createOscillator(),g=self.ctx.createGain();o.type='sawtooth';o.frequency.value=f;o.detune.value=det;
-    g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.012,t0+1.2);g.gain.setValueAtTime(0.012,t0+dur-0.6);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(lp);o.start(t0);o.stop(t0+dur+0.1);}};
-  const tick=()=>{if(!self.bgm)return;while(next<self.t()+0.6){const bar=Math.floor(step/4)%4,b=step%4;
-    if(b===0)chords[bar].forEach(m=>pad(mf(m),next,beat*4));
-    self.tone('triangle',mf(bass[bar][b]),next,beat*0.9,0.07,null,bus);
-    if(b===1||b===3)self.noise(next+beat*0.02,0.12,0.03,'highpass',6000,null,1,bus);
-    if(Math.random()<0.35){const sc=[69,72,74,76,79,81];self.tone('sine',mf(sc[Math.floor(Math.random()*sc.length)]),next+beat*(Math.random()<0.5?0:0.5),0.6,0.025,null,bus);}
-    next+=beat;step++;}};
+  const mf=m=>440*Math.pow(2,(m-69)/12);const self=this;let next=this.t()+0.1,step=0;
+  const pad=(f,t0,dur,vol=0.012,type='sawtooth')=>{for(const det of [-4,4]){const o=self.ctx.createOscillator(),g=self.ctx.createGain();o.type=type;o.frequency.value=f;o.detune.value=det;
+    g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+Math.min(1.2,dur/3));g.gain.setValueAtTime(vol,t0+dur*0.7);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(lp);o.start(t0);o.stop(t0+dur+0.1);}};
+  let tick;
+  if(this.style===2){// 緊張諜戰：快速低音脈動、時鐘滴答
+   const beat=60/112/2;const ost=[38,38,41,38,43,38,41,40];const stab=[[50,53,57],[48,52,55],[46,50,53],[45,49,52]];lp.frequency.value=1500;
+   tick=()=>{if(!self.bgm)return;while(next<self.t()+0.6){const bar=Math.floor(step/16)%4,b=step%16;
+     self.tone('sawtooth',mf(ost[b%8]-(bar===3?2:0)),next,beat*0.8,0.045,null,lp);
+     if(b%4===0)self.noise(next,0.04,0.05,'bandpass',2500,null,8,bus);
+     if(b%2===1)self.tone('square',2100,next,0.02,0.01,null,bus);
+     if(b===0)stab[bar].forEach(m=>pad(mf(m+12),next,beat*14,0.008));
+     if(b===12&&Math.random()<0.6)self.tone('triangle',mf(stab[bar][2]+24),next,0.4,0.03,null,bus);
+     next+=beat;step++;}};}
+  else if(this.style===3){// 江南夜雨：五聲音階撥弦、細雨聲
+   const beat=60/58;const sc=[62,65,67,69,72,74,77,79];const drone=[[50,57],[48,55],[46,53],[45,52]];
+   const rain=self.ctx.createBufferSource();rain.buffer=self.noiseBuf;rain.loop=true;const rf=self.ctx.createBiquadFilter();rf.type='lowpass';rf.frequency.value=900;const rg=self.ctx.createGain();rg.gain.value=0.035;rain.connect(rf);rf.connect(rg);rg.connect(bus);rain.start();
+   tick=()=>{if(!self.bgm){try{rain.stop();}catch(e){}return;}while(next<self.t()+0.8){const bar=Math.floor(step/4)%4,b=step%4;
+     if(b===0)drone[bar].forEach(m=>pad(mf(m),next,beat*4.2,0.01,'triangle'));
+     const n=1+(Math.random()<0.5?1:0);for(let k=0;k<n;k++){const m=sc[Math.floor(Math.random()*sc.length)];const tt=next+k*beat*0.5+(Math.random()<0.3?beat*0.25:0);
+      self.tone('triangle',mf(m),tt,1.2,0.05,null,bus);self.tone('sine',mf(m+12),tt,0.5,0.012,null,bus);}
+     next+=beat;step++;}};
+   this.bgm={bus,timer:setInterval(tick,200),rain};tick();return;}
+  else{// 夜上海爵士
+   const beat=60/66;const chords=[[57,60,64,67,71],[50,53,57,60,64],[52,56,59,62,65],[57,60,64,67,72]];const bass=[[45,48,52,55],[38,41,45,48],[40,44,47,50],[45,52,48,47]];
+   tick=()=>{if(!self.bgm)return;while(next<self.t()+0.6){const bar=Math.floor(step/4)%4,b=step%4;
+     if(b===0)chords[bar].forEach(m=>pad(mf(m),next,beat*4));
+     self.tone('triangle',mf(bass[bar][b]),next,beat*0.9,0.07,null,bus);
+     if(b===1||b===3)self.noise(next+beat*0.02,0.12,0.03,'highpass',6000,null,1,bus);
+     if(Math.random()<0.35){const sc=[69,72,74,76,79,81];self.tone('sine',mf(sc[Math.floor(Math.random()*sc.length)]),next+beat*(Math.random()<0.5?0:0.5),0.6,0.025,null,bus);}
+     next+=beat;step++;}};}
   this.bgm={bus,timer:setInterval(tick,200)};tick();},
- stopMusic(){if(!this.bgm)return;const {bus,timer}=this.bgm;clearInterval(timer);try{bus.gain.cancelScheduledValues(this.t());bus.gain.setValueAtTime(bus.gain.value,this.t());bus.gain.exponentialRampToValueAtTime(0.0001,this.t()+1);}catch(e){}this.bgm=null;},
+ cycleMusic(){if(!this.musicOn){this.musicOn=true;this.style=1;}else if(this.style<3){this.style++;}else{this.musicOn=false;}
+  this.stopMusic();this.save();if(this.musicOn)setTimeout(()=>this.startMusic(),60);},
+ stopMusic(){if(!this.bgm)return;const {bus,timer,rain}=this.bgm;clearInterval(timer);if(rain)try{rain.stop(this.t()+1);}catch(e){}try{bus.gain.cancelScheduledValues(this.t());bus.gain.setValueAtTime(bus.gain.value,this.t());bus.gain.exponentialRampToValueAtTime(0.0001,this.t()+1);}catch(e){}this.bgm=null;},
  toggleMusic(){this.musicOn=!this.musicOn;this.save();if(this.musicOn)this.startMusic();else this.stopMusic();},
  toggleSfx(){this.sfxOn=!this.sfxOn;this.save();}
 };
@@ -507,7 +622,7 @@ const cnt=(p,f)=>p.intel.filter(c=>f(c.color)).length;
 const reds=p=>cnt(p,isR), blues=p=>cnt(p,isB), blacks=p=>cnt(p,isK);
 const rbCount=p=>p.intel.filter(c=>isR(c.color)||isB(c.color)).length;
 let G=null;
-const SET={players:6,variant:0,timer:30,simple:false,autoSkip:true,name:'你',speed:1,hideAuto:false};
+const SET={players:6,variant:0,timer:0,simple:false,autoSkip:true,name:'你',speed:1,hideAuto:false};
 function N(){return G.players.length;}
 function alive(i){const p=G.players[i];return p&&p.alive&&!p.lost;}
 function nextAlive(i){const n=N();for(let k=1;k<=n;k++){const j=(i+k)%n;if(alive(j))return j;}return i;}
@@ -531,7 +646,7 @@ const isFemale=i=>{const g=gOf(i);return g==='女'||g==='雙';}, isMale=i=>{cons
 function flip(i,why){const p=G.players[i];if(p.roleUp)return;p.roleUp=true;log(`${pname(i)} 翻開角色：${R(i).name}${why?'（'+why+'）':''}。`,'fx');UI.fx('flip',i);UI.sfx('flip');UI.bubble(i,'翻開角色！');}
 function coverRole(i,why){const p=G.players[i];if(!p.roleUp)return;p.roleUp=false;log(`${pname(i)} 覆蓋了角色牌${why?'（'+why+'）':''}。`,'fx');UI.fx('flip',i);UI.sfx('flip');UI.bubble(i,'覆蓋角色');}
 async function announce(o){if(!UI.announce)return;UI.announce(o);await sleep(UI.annMs?UI.annMs(o):1500/SET.speed);}
-async function sk(i,n){log(`${pname(i)} 發動【${n}】。`,'skill');UI.sfx('skill');await announce({kind:'skill',who:i,skill:n});}
+async function sk(i,n){log(`${pname(i)} 發動【${n}】。`,'skill');const s=skillDef(i,n);const ult=!!(s&&s.c==='Y');UI.sfx(ult?'ult':'skill');await announce({kind:'skill',who:i,skill:n,ult,color:s?s.c:'R'});}
 async function yesNo(i,n,text,aiFn){if(humanCtl(i)&&!G.players[i].lost)return !!(await ask(i,{type:'skill',skill:n,text}));
  const v=aiFn?aiFn():true;if(v)await sleep(300/SET.speed);return v;}
 async function choose(i,spec,aiFn){if(humanCtl(i)&&!G.players[i].lost)return await ask(i,Object.assign({type:'choose',min:1,max:1},spec));
@@ -692,7 +807,9 @@ async function announceUse(i,it,resp){UI.sfx(it.as);let tgt=null;
  if(it.as==='counter'){const t=G.stack[it.target];if(t)tgt=`${pname(t.pi)} 的【${CT[t.as].name}】`;}
  else if(it.as==='burn'&&it.target)tgt=`${pname(it.target.owner)} 的黑情報`;
  else if(typeof it.target==='number')tgt=pname(it.target);
- await announce({kind:'use',who:i,card:it.card,as:it.as,target:tgt,resp});}
+ const ti=it.as==='counter'?(G.stack[it.target]?G.stack[it.target].pi:null):it.as==='burn'&&it.target?it.target.owner:typeof it.target==='number'?it.target:null;
+ if(ti!=null&&ti!==i)UI.arrow(i,ti,it.as);
+ await announce({kind:'use',who:i,card:it.card,as:it.as,target:tgt,resp,ti});}
 function mkItem(i,r){return {pi:i,card:r.card,as:r.as||r.card.type,target:r.target,negated:false};}
 async function useCard(i,r,baseCtx){
  takeFromHand(i,r.card);const item=mkItem(i,r);
@@ -719,7 +836,7 @@ async function counterPlayed(user,it){// 反擊
 async function resolveStack(){
  while(G.stack.length&&!G.over){const it=G.stack[G.stack.length-1];UI.render();await sleep(450/SET.speed);
   G.stack.pop();
-  if(it.negated){log(`${pname(it.pi)} 的【${CT[it.as].name}】被識破，失去效果。`,'neg');G.discard.push(it.card);UI.render();UI.sfx('fizzle');await announce({kind:'neg',who:it.pi,as:it.as,short:true});
+  if(it.negated){log(`${pname(it.pi)} 的【${CT[it.as].name}】被識破，失去效果。`,'neg');G.discard.push(it.card);UI.render();UI.sfx('fizzle');await announce({kind:'neg',card:it.card,who:it.pi,as:it.as,short:true});
    await negatedHook(it);continue;}
   const keep=await applyEffect(it);
   if(!keep)G.discard.push(it.card);UI.render();checkWin();}
@@ -875,7 +992,7 @@ async function openWindow(kind,start){
 /* ===== receiving, death, victory ===== */
 async function receiveIntel(i,c,info={}){
  const p=G.players[i];if(!alive(i)||G.over){G.discard.push(c);return;}
- p.intel.push(c);log(`${pname(i)} 獲得情報：${cdesc(c)}。`,'gain');UI.fx('gain',i,c.uid);UI.sfx('gain');UI.render();await sleep(600/SET.speed);
+ p.intel.push(c);log(`${pname(i)} 獲得情報：${cdesc(c)}。`,'gain');UI.fx('gain',i,c.uid);UI.sfx('gain');UI.render();await announce({kind:'gain',who:i,card:c});
  if(c.type==='public'){const v=PUB_VARS[c.v];if(v[p.identity]){drawCards(i,1);log(`${pname(i)} 依公開文本抽了一張牌。`,'fx');}else log(`${pname(i)} 依公開文本不需動作。`);}
  if(blacks(p)>=3){
   if(skillOn(i,'殺身成仁')){markY(i,'殺身成仁');await sk(i,'殺身成仁');await gainTriggers(i,c,info,true);checkWin();if(G.over)return;if(blacks(p)>=3)await killFlow(i,info);}
@@ -1234,6 +1351,15 @@ const Net={role:'solo',code:null,me:null,conns:new Map(),hostConn:null,lobby:[],
 };
 
 let ME=0;
+const IMG0=Object.assign({},IMG);
+const CUSTOM={art:{},load(){try{for(const k of Object.keys(CT)){const v=localStorage.getItem('fs-art-'+k);if(v)this.art[k]=v;}for(const r of ROLES){const v=localStorage.getItem('fs-img-'+r.id);if(v)IMG[r.id]=v;}}catch(e){}},
+ pick(kind,id,done){const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=()=>{const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{
+   const W=kind==='art'?240:360,H=kind==='art'?180:480;const cv=document.createElement('canvas');cv.width=W;cv.height=H;const cx=cv.getContext('2d');
+   const s=Math.max(W/im.width,H/im.height);const w=im.width*s,h=im.height*s;cx.drawImage(im,(W-w)/2,(H-h)/2,w,h);const url=cv.toDataURL('image/jpeg',0.82);
+   try{localStorage.setItem((kind==='art'?'fs-art-':'fs-img-')+id,url);}catch(e){alert('儲存空間不足，請先恢復部分圖片。');return;}
+   if(kind==='art')this.art[id]=url;else IMG[id]=url;done&&done();};im.src=rd.result;};rd.readAsDataURL(f);};inp.click();},
+ reset(kind,id){try{localStorage.removeItem((kind==='art'?'fs-art-':'fs-img-')+id);}catch(e){}if(kind==='art')delete this.art[id];else IMG[id]=IMG0[id];}};
+const _cardArt=cardArt;cardArt=function(t){const u=CUSTOM.art[t];return u?`<img class="art cimg" src="${u}" alt="">`:_cardArt(t);};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const PHASES=['回合開始','抽牌','出牌(1)','傳遞情報','出牌(2)','回合結束'];
@@ -1248,10 +1374,10 @@ const UI={
   let extra='';if(o.full&&c.type==='probe'){const v=PROBE_VARS[c.v];extra=`<div class="pv">${Object.entries(v).map(([k,a])=>`<span>${k}：${ACT_SHORT[a]}</span>`).join('')}</div>`;}
   if(o.full&&c.type==='public'){const v=PUB_VARS[c.v];extra=`<div class="pv">${['潛伏','軍情','醬油'].map(k=>`<span>${k}：${v[k]?'抽一張':'不動作'}</span>`).join('')}</div>`;}
   if(o.sm)return `<span class="card sm col-${c.color}"><b>${t.name}</b><i class="tr tr-${c.trans}">${TR_TXT[c.trans]}</i></span>`;
-  return `<div class="${cls.join(' ')}" data-uid="${c.uid}">
+  return `<div class="${cls.join(' ')}" data-uid="${c.uid}"><i class="orn tl"></i><i class="orn tr2"></i><i class="orn bl"></i><i class="orn br"></i>
    <div class="c-top"><b class="c-name">${t.name}</b><i class="tr tr-${c.trans}">${TR_TXT[c.trans]}</i></div>
-   <div class="c-art">${cardArt(c.type)}</div><div class="c-col">${COL_TXT[c.color]}色</div>
-   <div class="c-fx">${esc(o.full?t.fx:t.short)}</div>${extra}</div>`;},
+   <div class="c-art">${cardArt(c.type)}<span class="c-col">${COL_TXT[c.color]}</span></div>
+   <div class="c-fx">${esc(o.full?t.fx:t.short)}</div>${extra}<i class="gloss"></i></div>`;},
  back(m){return `<div class="card back"><div class="c-top"><b class="c-name">情報</b><i class="tr tr-${m}">${TR_TXT[m]}</i></div><div class="seal">密</div></div>`;},
  chip(c){return `<span class="chip col-${c.color}" id="chip-${c.uid}">${COL_TXT[c.color]}</span>`;},
  rel(i){return (i-ME+N())%N();},
@@ -1288,7 +1414,7 @@ const UI={
  moveTransit(first){Net.fwd('moveTransit',arguments);if(G)this.placeTransit();if(first){const el=$('#transit');el.classList.add('first');setTimeout(()=>el.classList.remove('first'),600);}},
  renderHand(){const me=this.me();const r=me.role?ROLES.find(x=>x.id===me.role):null;
   $('#myrole').innerHTML=r?`<img src="${IMG[r.id]}" alt=""><div class="mr"><b>${r.name}</b>${me.identity?`<i class="idb id-${me.identity}">${me.identity}</i>`:''}
-   <div class="myskills">${r.skills.map(s=>`<i class="sk sk-${s.c} ${skillOn(ME,s.n)?'':'off'}">${s.n}</i>`).join('')}</div></div>`:'<div class="mr"><b>選角中</b></div>';
+   <div class="cnt mycnt"><span class="hd">${me.hand.length}</span><span class="r">${reds(me)}</span><span class="b">${blues(me)}</span><span class="k ${blacks(me)>=2?'warn':''}">${blacks(me)}</span></div><div class="myskills">${r.skills.map(s=>`<i class="sk sk-${s.c} ${skillOn(ME,s.n)?'':'off'}">${s.n}</i>`).join('')}</div></div>`:'<div class="mr"><b>選角中</b></div>';
   $('#myrole').onclick=()=>r&&this.rolePop(r.id,ME);
   const rq=this.pending&&this.pending.req;const legal=new Set();
   if(rq){if(rq.type==='play')legalCards(ME,rq.ctx).forEach(c=>legal.add(c.uid));if(rq.type==='pass'||rq.type==='discard')me.hand.forEach(c=>legal.add(c.uid));}
@@ -1385,7 +1511,7 @@ const UI={
   else if(g.stage===1){const id=rq.identity;const goal={潛伏:'集滿三張紅情報',軍情:'集滿三張藍情報',醬油:'完成角色的機密任務'}[id];
    el.innerHTML=`<h2>你的身份</h2><div class="gstage"><div class="gcard idc id-${id} flipin"><b>${id}</b><small>${id==='潛伏'?'潛伏戰線':id==='軍情'?'軍情處':'打醬油'}</small></div></div><p class="goal">勝利條件：${goal}</p><button class="pri" data-g="next">抽角色</button>`;}
   else{el.innerHTML=`<h2>抽角色：選一位</h2><div class="gstage">${rq.opts.map(id=>{const r=ROLES.find(x=>x.id===id);const f=g.flipped.has(id);
-    return f?`<div class="gcard role flipin"><img src="${IMG[id]}" alt=""><b>${r.name}</b><small>${r.hidden?'潛伏角色':'公開角色'}｜${r.g==='雙'?'男女':r.g}</small><div class="gsk">${r.skills.map(s=>`<i class="sk sk-${s.c}">${s.n}</i>`).join('')}</div><button class="pri" data-g="pick:${id}">選這位</button><button class="ghost mini" data-g="info:${id}">技能</button></div>`
+    return f?`<div class="gcard role flipin"><img src="${IMG[id]}" alt=""><b>${r.name}</b><small>${r.hidden?'潛伏角色':'公開角色'}｜${r.g==='雙'?'男女':r.g}</small><div class="gsk">${r.skills.map(s=>`<p><i class="sk sk-${s.c}">${s.n}</i>${esc(s.t)}</p>`).join('')}<p class="gm"><b>機密任務</b>${esc(r.m)}</p></div><button class="pri" data-g="pick:${id}">選這位</button></div>`
      :`<button class="gcard back" data-g="flip:${id}"><span>點擊翻開</span></button>`;}).join('')}</div>`;}
   el.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{const a=b.dataset.g;
    if(a==='id'){AUDIO.play('reveal');g.stage=1;this.renderGacha();}
@@ -1395,18 +1521,30 @@ const UI={
    else if(a.startsWith('pick:')){AUDIO.play('accept');this.resolve(a.slice(5));}});},
  closeGacha(){const el=$('#gacha');if(el)el.remove();this.gacha=null;},
  /* ---------- forwarded effects ---------- */
- annMs(o){return (o.kind==='death'?2000:o.kind==='neg'?1300:1500)/SET.speed;},
+ annMs(o){return (o.kind==='death'?2000:o.kind==='skill'?(o.ult?2000:1600):o.kind==='neg'?1500:o.kind==='gain'?1100:1500)/SET.speed;},
  announce(o){Net.fwd('announce',arguments);if(!G||!G.players)return;const el=$('#announce');const who=o.who!=null?esc(pname(o.who)):'';let h='';
+  if(o.kind==='skill'){this.cinema(o);return;}
   switch(o.kind){
-   case 'use':h=`<div class="an-card">${this.card(o.card,{big:true})}${o.as!==o.card.type?`<b class="as">當作【${CT[o.as].name}】</b>`:''}</div><p><b>${who}</b> 使用【${CT[o.as].name}】${o.target?`<br>→ ${esc(o.target)}`:''}</p>`;break;
-   case 'skill':{const r=G.players[o.who].role&&ROLES.find(x=>x.id===G.players[o.who].role);const s=r&&r.skills.find(x=>x.n===o.skill);
-    h=`<div class="an-skill">${r?`<img src="${IMG[r.id]}" alt="">`:''}<b class="sk sk-${s?s.c:'R'}">${esc(o.skill)}</b></div><p><b>${who}</b> 發動技能</p>`;break;}
-   case 'neg':h=`<div class="an-neg">識破！</div><p><b>${who}</b> 的【${CT[o.as].name}】失效</p>`;break;
-   case 'pass':h=`<div class="an-pass tr-${o.method}">${TR_TXT[o.method]}</div>${o.card?`<div class="an-card">${this.card(o.card)}</div>`:''}<p><b>${who}</b> 傳出情報${o.target?` → ${esc(o.target)}`:''}</p>`;break;
-   case 'death':{const r=G.players[o.who].role&&ROLES.find(x=>x.id===G.players[o.who].role);h=`<div class="an-skill dead">${r?`<img src="${IMG[r.id]}" alt="">`:''}<b>陣亡</b></div><p><b>${who}</b> 收到第三張黑情報</p>`;break;}
+   case 'use':h=`<div class="an-card fx-${o.as}">${this.card(o.card,{big:true})}<i class="ov"></i>${o.as!==o.card.type?`<b class="as">當作【${CT[o.as].name}】</b>`:''}</div><p><b>${who}</b> 使用【${CT[o.as].name}】${o.target?`<br><span class="to">➜ ${esc(o.target)}</span>`:''}</p>`;
+    if(o.ti!=null)setTimeout(()=>this.fx('hit-'+o.as,o.ti),500);break;
+   case 'neg':h=`<div class="an-card shatter">${o.card?`<div class="half l">${this.card(o.card,{big:true})}</div><div class="half r">${this.card(o.card,{big:true})}</div>`:''}<svg class="crack" viewBox="0 0 100 140"><path d="M52 0 L46 30 L58 52 L40 78 L55 104 L48 140"/><path d="M58 52 L80 60 M40 78 L18 70 M46 30 L30 22"/></svg></div><p class="neg-t">識破！</p><p><b>${who}</b> 的【${CT[o.as].name}】失效</p>`;setTimeout(()=>AUDIO.play('shatter'),250);break;
+   case 'pass':h=`<div class="an-pass tr-${o.method}">${TR_TXT[o.method]}</div>${o.card?`<div class="an-card">${this.card(o.card)}</div>`:''}<p><b>${who}</b> 傳出情報${o.target?` ➜ ${esc(o.target)}`:''}</p>`;break;
+   case 'gain':h=`<div class="an-card gainfx">${this.card(o.card)}</div><p><b>${who}</b> 收下<span class="colw col-${o.card.color}">${COL_TXT[o.card.color]}色</span>情報</p>`;break;
+   case 'death':{const r=G.players[o.who].role&&ROLES.find(x=>x.id===G.players[o.who].role);h=`<div class="an-skill dead">${r?`<img src="${IMG[r.id]}" alt="">`:''}<b>陣亡</b></div><p><b>${who}</b> 收到第三張黑情報</p>`;$('#table').classList.add('shake');setTimeout(()=>$('#table').classList.remove('shake'),600);break;}
    default:h=`<p>${esc(o.text||'')}</p>`;}
   el.innerHTML=`<div class="an an-${o.kind}">${h}</div>`;el.classList.remove('go');void el.offsetWidth;el.classList.add('go');
   clearTimeout(this._an);this._an=setTimeout(()=>el.classList.remove('go'),this.annMs(o)-150);},
+ cinema(o){const p=G.players[o.who];const r=p.role&&ROLES.find(x=>x.id===p.role);let el=$('#cine');if(!el){el=document.createElement('div');el.id='cine';$('#table').appendChild(el);}
+  el.className='c-'+(o.color||'R')+(o.ult?' ult':'');
+  el.innerHTML=`<div class="strip"><i class="sweep"></i>${r?`<img src="${IMG[r.id]}" alt="">`:''}<div class="txt"><small>${esc(p.name)}${r?'・'+r.name:''}</small><b>${esc(o.skill)}</b>${o.ult?'<em>大 絕</em>':''}</div></div>`;
+  void el.offsetWidth;el.classList.add('go');if(o.ult){$('#table').classList.add('shake');setTimeout(()=>$('#table').classList.remove('shake'),600);}
+  clearTimeout(this._cn);this._cn=setTimeout(()=>el.classList.remove('go'),this.annMs(o)-200);},
+ arrow(a,b,as){Net.fwd('arrow',arguments);if(!G||!G.players||a==null||b==null||a===b)return;const s=$('#arrows');const p=this.seatPos(a),q=this.seatPos(b);
+  const tb=$('#table');const W=tb.clientWidth,H=tb.clientHeight;const x1=p.x*W/100,y1=p.y*H/100,x2=q.x*W/100,y2=q.y*H/100;
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1;const sx=x1+dx/L*40,sy=y1+dy/L*30,ex=x2-dx/L*48,ey=y2-dy/L*38;const cx=(sx+ex)/2-dy/L*L*0.18,cy=(sy+ey)/2+dx/L*L*0.18;
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','arw a-'+as);
+  g.innerHTML=`<path d="M${sx} ${sy} Q${cx} ${cy} ${ex} ${ey}" marker-end="url(#ah)" pathLength="100"/><text x="${cx}" y="${cy}">${CT[as]?CT[as].name:''}</text>`;
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`);s.appendChild(g);setTimeout(()=>g.remove(),2600);},
  banner(a,b){Net.fwd('banner',arguments);const el=$('#banner');const ce=$('#center');ce.classList.add('bn');clearTimeout(this._bn);this._bn=setTimeout(()=>ce.classList.remove('bn'),1250);el.innerHTML=`<small>${esc(a)}</small><b>${esc(b)}</b>`;el.classList.remove('go');void el.offsetWidth;el.classList.add('go');
   if(G&&G.players&&G.turn===ME&&b==='回合開始')AUDIO.play('myturn');},
  bubble(i,text,kind){Net.fwd('bubble',arguments);if(!G||!G.players||!$('#seats'))return;const p=this.seatPos(i);const b=document.createElement('div');b.className='bubble '+(kind||'')+(p.y<50?' below':'');b.textContent=text;
@@ -1414,13 +1552,14 @@ const UI={
   if(!this.drawer){const f=$('#chatfloat');const m=document.createElement('div');m.innerHTML=`<b>${esc(pname(i))}</b>${esc(text)}`;f.appendChild(m);while(f.children.length>3)f.firstChild.remove();setTimeout(()=>m.remove(),5000);}},
  path(a,b,m){Net.fwd('path',arguments);if(!G||!G.players||a==null||b==null||a===b)return;const s=$('#arrows');const p=this.seatPos(a),q=this.seatPos(b);
   const id='p'+Math.random().toString(36).slice(2,7);const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','path tr-'+m);
-  g.innerHTML=`<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" /><circle cx="${q.x}" cy="${q.y}" r="1.2"/>`;s.appendChild(g);setTimeout(()=>g.remove(),1800);},
+  const tb=$('#table');const W=tb.clientWidth,H=tb.clientHeight;s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  g.innerHTML=`<line x1="${p.x*W/100}" y1="${p.y*H/100}" x2="${q.x*W/100}" y2="${q.y*H/100}" marker-end="url(#ah2)"/>`;s.appendChild(g);setTimeout(()=>g.remove(),1800);},
  drawFx(i,cards){const n=typeof cards==='number'?cards:cards.length;Net.fwd('drawFx',[i,n]);if(!G||!G.players)return;AUDIO.play('draw');
   const tb=$('#table');const to=i===ME?{x:50,y:104}:this.seatPos(i);
   for(let k=0;k<Math.min(n,5);k++){const d=document.createElement('div');d.className='fly';d.style.left='50%';d.style.top='50%';tb.appendChild(d);
    setTimeout(()=>{d.style.left=to.x+'%';d.style.top=to.y+'%';d.style.opacity='0.2';},40+k*90);setTimeout(()=>d.remove(),800+k*90);}},
  sfx(name){Net.fwd('sfx',arguments);AUDIO.play(name);},
- fx(type,i,uid){Net.fwd('fx',arguments);setTimeout(()=>{if(type==='burn'){const c=document.getElementById('chip-'+uid);if(c)c.classList.add('burning');return;}
+ fx(type,i,uid){Net.fwd('fx',arguments);setTimeout(()=>{if(type.startsWith('hit-')){const s=document.querySelector(`.seat[data-seat="${i}"]`);if(s){s.classList.add('hit','hit-'+type.slice(4));setTimeout(()=>s.classList.remove('hit','hit-'+type.slice(4)),1100);}return;}if(type==='burn'){const c=document.getElementById('chip-'+uid);if(c)c.classList.add('burning');return;}
   if(type==='gain'){const c=document.getElementById('chip-'+uid);if(c)c.classList.add('pop');}
   const s=document.querySelector(`.seat[data-seat="${i}"]`);if(s){s.classList.add('fx-'+type);setTimeout(()=>s.classList.remove('fx-'+type),1200);}
   if(type==='swap'){const t=$('#transit');t.classList.add('swapfx');setTimeout(()=>t.classList.remove('swapfx'),800);}},40);},
@@ -1431,9 +1570,11 @@ const UI={
  /* ---------- popovers ---------- */
  pop(html){const p=$('#pop');p.innerHTML=`<div class="pbox">${html}<button class="ghost mini" data-x>關閉</button></div>`;p.hidden=false;p.onclick=e=>{if(e.target===p||e.target.dataset.x!==undefined)p.hidden=true;};},
  cardPop(c){this.pop(`${this.card(c,{full:true,big:true})}<p class="hint">時機：${esc(CT[c.type].time)}</p>`);},
+ artBtns(kind,id){return `<div class="btns"><button class="mini" data-art="${kind}:${id}">更換圖片</button>${(kind==='art'?CUSTOM.art[id]:IMG[id]!==IMG0[id])?`<button class="mini ghost" data-rst="${kind}:${id}">恢復預設</button>`:''}</div>`;},
+ bindArt(redo){document.querySelectorAll('[data-art]').forEach(b=>b.onclick=()=>{const [k,id]=b.dataset.art.split(':');CUSTOM.pick(k,id,()=>{redo();this.render();});});document.querySelectorAll('[data-rst]').forEach(b=>b.onclick=()=>{const [k,id]=b.dataset.rst.split(':');CUSTOM.reset(k,id);redo();this.render();});},
  roleHTML(id){const r=ROLES.find(x=>x.id===id);return `<div class="rd"><img src="${IMG[id]}" alt=""><div><h3>${r.name}<small>${r.hidden?'潛伏角色':'公開角色'}｜${r.g==='雙'?'男女皆是':r.g+'性'}</small></h3>
   ${r.skills.map(s=>`<p class="skl ${s.impl?'':'todo'}"><i class="sk sk-${s.c}">${s.n}</i><small>${SKC[s.c]}色${s.cover?'・蓋伏時':''}${s.impl?'':'・尚未啟用'}</small><br>${esc(s.t)}</p>`).join('')}<p class="mis"><b>機密任務</b> ${esc(r.m)}</p></div></div>`;},
- rolePop(id){this.pop(this.roleHTML(id));},
+ rolePop(id){this.pop(this.roleHTML(id)+(this.artMode?this.artBtns('img',id):''));if(this.artMode)this.bindArt(()=>this.rolePop(id));},
  seatPop(i){const p=G.players[i];const r=p.role;
   this.pop(`<h3>${esc(p.name)}${p.identity&&(p.revealed||p.idOpen||i===ME)?` <i class="idb id-${p.identity}">${p.identity}</i>`:''}</h3><p class="hint">手牌 ${p.hand.length}　紅 ${reds(p)}　藍 ${blues(p)}　黑 ${blacks(p)}${G.locks.has(i)?'　｜鎖定':''}${G.tigers.has(i)?'　｜調虎離山':''}</p>
    <div class="chips big">${p.intel.map(c=>this.card(c,{sm:true})).join('')||'<span class="hint">還沒有情報</span>'}</div>${r?this.roleHTML(r):`<p class="hint">${p.roleHidden?'潛伏角色，尚未翻開。':''}</p>`}`);},
@@ -1454,7 +1595,7 @@ const UI={
  settingsForm(maxHumans){const n=SET.players;const vs=ID_TABLE[n];
   return `<div class="form"><label>總人數（不足由電腦補上）<select id="sN">${[3,4,5,6,7,8,9].filter(k=>k>=maxHumans).map(k=>`<option ${k===n?'selected':''}>${k}</option>`).join('')}</select></label>
    <label>身份配置<select id="sV">${vs.map((_,k)=>`<option value="${k}" ${SET.variant===k?'selected':''}>${(ID_LABEL[n]||[])[k]||'標準'}</option>`).join('')}</select></label>
-   <label>思考時間<select id="sT">${[[20,'20 秒'],[30,'30 秒'],[45,'45 秒'],[0,'不限']].map(([v,t])=>`<option value="${v}" ${SET.timer===v?'selected':''}>${t}</option>`).join('')}</select></label>
+   <label>思考時間<select id="sT">${[[0,'不限'],[20,'20 秒'],[30,'30 秒'],[45,'45 秒']].map(([v,t])=>`<option value="${v}" ${SET.timer===v?'selected':''}>${t}</option>`).join('')}</select></label>
    <label>節奏<select id="sS">${[[0.6,'新手（慢）'],[1,'標準'],[1.6,'快']].map(([v,t])=>`<option value="${v}" ${SET.speed===v?'selected':''}>${t}</option>`).join('')}</select></label>
    <label class="ck"><input type="checkbox" id="sSkip" ${SET.autoSkip?'checked':''}>沒有可用的牌時自動略過</label></div>`;},
  bindSettings(){$('#sN').onchange=e=>{SET.players=+e.target.value;SET.variant=0;const vs=ID_TABLE[SET.players];$('#sV').innerHTML=vs.map((_,k)=>`<option value="${k}">${(ID_LABEL[SET.players]||[])[k]||'標準'}</option>`).join('');};},
@@ -1475,29 +1616,30 @@ const UI={
  netLost(){this.modal(`<h2>連線中斷</h2><p class="lead">與房主的連線中斷了。重新連線後會回到原本的座位。</p><div class="btns"><button class="pri" id="rc">重新連線</button><button class="ghost" id="bk">離開</button></div>`);
   $('#rc').onclick=()=>{this.modal('<h2>重新連線中…</h2>');Net.join(Net.code,Net.me.name,e=>this.netError(e));};$('#bk').onclick=()=>location.href=location.pathname;},
  openMenu(){const host=Net.role!=='client';
-  this.modal(`<h2>選單</h2><div class="menu">${host?'<button id="mn">新的一局</button>':''}<button id="mg">投降</button><button id="ml" class="ghost">離開，回到首頁</button><button data-m="close" class="ghost">繼續遊戲</button></div>`);
+  this.modal(`<h2>選單</h2><div class="menu">${host?'<button id="mn">新的一局</button>':''}<button id="ma">美術設定（更換卡圖）</button><button id="mg">投降</button><button id="ml" class="ghost">離開，回到首頁</button><button data-m="close" class="ghost">繼續遊戲</button></div>`);
   if(host)$('#mn').onclick=()=>{this.closeModal();Net.role==='host'?this.openHostLobby():this.openSolo();};
+  $('#ma').onclick=()=>{this.openGallery('cards',true);};
   $('#mg').onclick=()=>{this.closeModal();if(G&&!G.over&&alive(ME)){this.dropPending();Net.sendSurrender();}};
   $('#ml').onclick=()=>location.href=location.pathname;},
- openGallery(tab='roles'){const draw=(t)=>{this.modal(`<div class="gh"><h2>圖鑑</h2><div class="tabs"><button data-g="roles" class="${t==='roles'?'on':''}">角色</button><button data-g="cards" class="${t==='cards'?'on':''}">功能牌</button></div><button data-m="close" class="ghost mini">關閉</button></div>
-   ${t==='roles'?`<p class="hint"><i class="sk sk-B">藍</i>可回應　<i class="sk sk-R">紅</i>條件觸發　<i class="sk sk-Y">黃</i>每局一次</p><div class="ggrid">${ROLES.map(r=>`<button class="gr" data-r="${r.id}"><img src="${IMG[r.id]}" alt=""><b>${r.name}</b></button>`).join('')}</div>`
+ openGallery(tab='roles',artMode){this.artMode=!!artMode;const draw=(t)=>{this.modal(`<div class="gh"><h2>${this.artMode?'美術設定':'圖鑑'}</h2><div class="tabs"><button data-g="roles" class="${t==='roles'?'on':''}">角色</button><button data-g="cards" class="${t==='cards'?'on':''}">功能牌</button></div><button data-m="close" class="ghost mini">關閉</button></div>
+   ${this.artMode?'<p class="hint">點選角色或卡牌，就能上傳自己的圖片替換。圖片只存在這台裝置上，連線時其他人仍看到他們自己的設定。</p>':''}${t==='roles'?`<p class="hint"><i class="sk sk-B">藍</i>可回應　<i class="sk sk-R">紅</i>條件觸發　<i class="sk sk-Y">黃</i>每局一次</p><div class="ggrid">${ROLES.map(r=>`<button class="gr" data-r="${r.id}"><img src="${IMG[r.id]}" alt=""><b>${r.name}</b></button>`).join('')}</div>`
    :`<div class="gcards">${Object.entries(CT).map(([k,c])=>`<button class="gcx" data-c="${k}">${this.card({uid:0,type:k,color:Object.keys(c.col)[0],trans:Object.keys(c.tr)[0],v:0})}<small>${c.n} 張</small></button>`).join('')}</div>`}`,true);
    document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>draw(b.dataset.g));
    document.querySelectorAll('.gr').forEach(b=>b.onclick=()=>this.rolePop(b.dataset.r));
-   document.querySelectorAll('.gcx').forEach(b=>b.onclick=()=>{const k=b.dataset.c,c=CT[k];this.pop(`${this.card({uid:0,type:k,color:Object.keys(c.col)[0],trans:Object.keys(c.tr)[0],v:0},{full:true,big:true})}<p class="hint">時機：${esc(c.time)}</p><p class="hint">${Object.entries(c.col).map(([x,n])=>`${COL_TXT[x]}×${n}`).join('、')}｜${Object.entries(c.tr).map(([m,n])=>`${TR_TXT[m]}×${n}`).join('、')}</p>`);});};draw(tab);},
+   document.querySelectorAll('.gcx').forEach(b=>b.onclick=()=>{const k=b.dataset.c,c=CT[k];const show=()=>{this.pop(`${this.card({uid:0,type:k,color:Object.keys(c.col)[0],trans:Object.keys(c.tr)[0],v:0},{full:true,big:true})}<p class="hint">時機：${esc(c.time)}</p><p class="hint">${Object.entries(c.col).map(([x,n])=>`${COL_TXT[x]}×${n}`).join('、')}｜${Object.entries(c.tr).map(([m,n])=>`${TR_TXT[m]}×${n}`).join('、')}</p>${this.artMode?this.artBtns('art',k):''}`);if(this.artMode)this.bindArt(()=>{show();draw(t);});};show();});};draw(tab);},
  init(){$('#bChat').onclick=()=>{this.drawer=!(this.drawer&&this.drawerTab==='chat');this.drawerTab='chat';if(G&&G.players)this.renderDrawer();else $('#drawer').classList.toggle('open',this.drawer);if(this.drawer)setTimeout(()=>$('#chatIn').focus(),50);};
   $('#bLog').onclick=()=>{this.drawer=!(this.drawer&&this.drawerTab==='log');this.drawerTab='log';if(G&&G.players)this.renderDrawer();else $('#drawer').classList.toggle('open',this.drawer);};
   $('#dClose').onclick=()=>{this.drawer=false;$('#drawer').classList.remove('open');};
   document.querySelectorAll('#drawer .tabs button').forEach(b=>b.onclick=()=>{this.drawerTab=b.dataset.tab;this.renderDrawer();});
-  $('#bGal').onclick=()=>this.openGallery();$('#bMenu').onclick=()=>this.openMenu();
-  const snd=()=>{$('#bSnd').textContent=AUDIO.musicOn?'音樂 開':'音樂 關';$('#bSfx').textContent=AUDIO.sfxOn?'音效 開':'音效 關';};
-  $('#bSnd').onclick=()=>{AUDIO.init();AUDIO.toggleMusic();snd();};$('#bSfx').onclick=()=>{AUDIO.init();AUDIO.toggleSfx();snd();};
+  $('#bGal').onclick=()=>this.openGallery('roles',false);$('#bMenu').onclick=()=>this.openMenu();
+  const snd=()=>{$('#bSnd').textContent=AUDIO.musicOn?'音樂 '+['一','二','三'][AUDIO.style-1]:'音樂 關';$('#bSfx').textContent=AUDIO.sfxOn?'音效 開':'音效 關';};
+  $('#bSnd').onclick=()=>{AUDIO.init();AUDIO.resume();AUDIO.cycleMusic();snd();};$('#bSfx').onclick=()=>{AUDIO.init();AUDIO.toggleSfx();snd();};
   const send=t=>{if(!G||!G.players||!t.trim())return;Net.sendChat(t.trim());};
-  $('#chatForm').onsubmit=e=>{e.preventDefault();send($('#chatIn').value);$('#chatIn').value='';};
-  document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>send(b.textContent));
+  $('#chatForm').onsubmit=e=>{e.preventDefault();send($('#chatIn').value);$('#chatIn').value='';$('#chatIn').blur();this.drawer=false;$('#drawer').classList.remove('open');};
+  document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{send(b.textContent);this.drawer=false;$('#drawer').classList.remove('open');});
   $('#hideAuto').onchange=e=>{SET.hideAuto=e.target.checked;this.render();};
   window.addEventListener('resize',()=>this.dirty());
-  AUDIO.init();snd();this.openStart();}
+  CUSTOM.load();AUDIO.init();snd();this.openStart();}
 };
 window.addEventListener('DOMContentLoaded',()=>UI.init());
 </script>
