@@ -376,6 +376,18 @@ button.skb.sk-B{background:var(--blue)}button.skb.sk-R{background:var(--red)}but
 @keyframes bubpop{0%{opacity:0;scale:.5}6%{opacity:1;scale:1.08}10%{scale:1}88%{opacity:1}100%{opacity:0}}
 
 #bubbles{position:absolute;inset:0;z-index:8;pointer-events:none;}
+/* covered roles + shield badge for 潛伏 roles */
+.shield{position:absolute;top:2px;right:2px;width:16px;height:19px;z-index:3;pointer-events:none;
+ background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 28'%3E%3Cpath d='M12 1 2 5v8c0 7 4.5 11.5 10 14 5.5-2.5 10-7 10-14V5z' fill='%238c1f1b' stroke='%23f0d28a' stroke-width='2'/%3E%3Cpath d='M12 7v14M7 12h10' stroke='%23f0d28a' stroke-width='2'/%3E%3C/svg%3E") center/contain no-repeat;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7));}
+.shield.big{width:30px;height:36px;top:8px;right:8px;}
+.gr{position:relative;}.gcard.role{position:relative;}
+.por.hid{position:relative;}
+.por .covlbl{position:absolute;inset:0;display:grid;place-items:center;font-family:"LXGW WenKai TC",serif;color:#d2ab62;writing-mode:vertical-rl;font-size:1.05em;z-index:2;}
+.por.mine-cov img{filter:brightness(.35) sepia(.6);}
+.por.mine-cov{background:none;border:1px solid #6c5233;}
+.por.mine-cov::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(59,42,26,.55) 0 5px,rgba(46,32,20,.55) 5px 10px);}
+.mypor{position:relative;flex:none;}.mypor.cov img{filter:brightness(.45) sepia(.5);}
+.mypor .covlbl{position:absolute;left:0;right:0;bottom:4px;text-align:center;font-size:.8em;color:#ffd27a;background:rgba(0,0,0,.6);}
 </style>
 </head>
 <body>
@@ -1635,14 +1647,15 @@ const UI={
   $('#phases').innerHTML=PHASES.map(p=>`<li class="${p===G.phase?'on':''}">${p}</li>`).join('');
   const st=G.step;$('#steps').innerHTML=G.phase==='傳遞情報'&&st?STEPS.map((s,k)=>`<li class="${k+1===st.n?'on':''}">${s}</li>`).join(''):'';},
  renderSeats(){const box=$('#seats');
-  box.innerHTML=G.players.map((p,i)=>{const pos=this.seatPos(i);const r=p.role?ROLES.find(x=>x.id===p.role):null;const out=!p.alive||p.lost;
+  box.innerHTML=G.players.map((p,i)=>{const pos=this.seatPos(i);const r0=p.role?ROLES.find(x=>x.id===p.role):null;const out=!p.alive||p.lost;
+   const isHid=p.roleHidden!=null?!!p.roleHidden:!!(r0&&r0.hidden);const covered=!p.roleUp&&!p.revealed;const r=(i===ME||!covered)?r0:null;
    const cls=['seat'];if(i===G.turn)cls.push('turn');if(out)cls.push('out');if(i===ME)cls.push('me');if(G.locks.has(i))cls.push('locked');if(G.tigers.has(i))cls.push('tiger');
    if(G.step&&G.step.t===i)cls.push('target');if(G.priority===i)cls.push('prio');if(this.sel&&this.sel.players&&this.sel.players.includes(i))cls.push('pick');
    if(pos.y<50)cls.push('upper');
    const b=blacks(p),rr=reds(p),bb=blues(p);const id=p.identity;
    const tag=p.ctrl==='ai'?'<em class="ai">AI</em>':(p.ctrl==='remote'&&!p.online?'<em class="off">AI代打</em>':'');
    return `<div class="${cls.join(' ')}" style="left:${pos.x}%;top:${pos.y}%" data-seat="${i}">
-    <div class="por ${r?'':'hid'}">${r?`<img src="${IMG[r.id]}" alt="">`:`<span>${p.roleHidden?'潛伏':'？'}</span>`}${out?`<div class="dead">${p.lost?'出局':'陣亡'}</div>`:''}${id&&(p.revealed||p.idOpen||i===ME)?`<i class="idb id-${id}">${id[0]}</i>`:''}</div>
+    <div class="por ${r&&!covered?'':'hid'} ${r&&covered?'mine-cov':''}">${r?`<img src="${IMG[r.id]}" alt="">`:''}${covered?`<span class="covlbl">${isHid?'潛伏':'覆蓋'}</span>`:''}${isHid?'<i class="shield" title="潛伏角色"></i>':''}${out?`<div class="dead">${p.lost?'出局':'陣亡'}</div>`:''}${id&&(p.revealed||p.idOpen||i===ME)?`<i class="idb id-${id}">${id[0]}</i>`:''}</div>
     <div class="info"><div class="nm">${esc(p.name)}${tag}</div>
      <div class="cnt"><span class="hd" title="手牌">${p.hand.length}</span><span class="r">${rr}</span><span class="b">${bb}</span><span class="k ${b>=2?'warn':''}">${b}</span></div>
      <div class="chips">${p.intel.map(c=>this.chip(c)).join('')}</div></div>
@@ -1659,7 +1672,7 @@ const UI={
   if(tr){const from=first||this._trAt==null?tr.sender:this._trAt;if(from!==tr.target)this._arrow(from,tr.target,'m-'+tr.method,TR_TXT[tr.method]);this._trAt=tr.target;}else this._trAt=null;
   this.placeTransit();if(first){const el=$('#transit');el.classList.add('first');setTimeout(()=>el.classList.remove('first'),600);}},
  renderHand(){const me=this.me();const r=me.role?ROLES.find(x=>x.id===me.role):null;
-  $('#myrole').innerHTML=r?`<img src="${IMG[r.id]}" alt=""><div class="mr"><b>${r.name}</b>${me.identity?`<i class="idb id-${me.identity}">${me.identity}</i>`:''}
+  $('#myrole').innerHTML=r?`<div class="mypor ${me.roleUp?'':'cov'}"><img src="${IMG[r.id]}" alt="">${r.hidden?'<i class="shield"></i>':''}${me.roleUp?'':'<span class="covlbl">蓋伏中</span>'}</div><div class="mr"><b>${r.name}</b>${me.identity?`<i class="idb id-${me.identity}">${me.identity}</i>`:''}
    <div class="cnt mycnt"><span class="hd">${me.hand.length}</span><span class="r">${reds(me)}</span><span class="b">${blues(me)}</span><span class="k ${blacks(me)>=2?'warn':''}">${blacks(me)}</span></div><div class="myskills">${r.skills.map(s=>`<i class="sk sk-${s.c} ${skillOn(ME,s.n)?'':'off'}">${s.n}</i>`).join('')}</div></div>`:'<div class="mr"><b>選角中</b></div>';
   $('#myrole').onclick=()=>r&&this.rolePop(r.id,ME);
   const rq=this.pending&&this.pending.req;const legal=new Set();
@@ -1767,7 +1780,7 @@ const UI={
   else if(g.stage===1){const id=rq.identity;const goal={潛伏:'集滿三張紅情報',軍情:'集滿三張藍情報',醬油:'完成角色的機密任務'}[id];
    el.innerHTML=`<h2>你的身份</h2><div class="gstage"><div class="gcard idc id-${id} flipin"><b>${id}</b><small>${id==='潛伏'?'潛伏戰線':id==='軍情'?'軍情處':'打醬油'}</small></div></div><p class="goal">勝利條件：${goal}</p><button class="pri" data-g="next">抽角色</button>`;}
   else{el.innerHTML=`<h2>抽角色：選一位</h2><div class="gstage">${rq.opts.map(id=>{const r=ROLES.find(x=>x.id===id);const f=g.flipped.has(id);
-    return f?`<div class="gcard role flipin"><img src="${IMG[id]}" alt=""><b>${r.name}</b><small>${r.hidden?'潛伏角色':'公開角色'}｜${r.g==='雙'?'男女':r.g}</small><div class="gsk">${r.skills.map(s=>`<p><i class="sk sk-${s.c}">${s.n}</i>${esc(s.t)}</p>`).join('')}<p class="gm"><b>機密任務</b>${esc(r.m)}</p></div><button class="pri" data-g="pick:${id}">選這位</button></div>`
+    return f?`<div class="gcard role flipin">${r.hidden?'<i class="shield big"></i>':''}<img src="${IMG[id]}" alt=""><b>${r.name}</b><small>${r.hidden?'潛伏角色':'公開角色'}｜${r.g==='雙'?'男女':r.g}</small><div class="gsk">${r.skills.map(s=>`<p><i class="sk sk-${s.c}">${s.n}</i>${esc(s.t)}</p>`).join('')}<p class="gm"><b>機密任務</b>${esc(r.m)}</p></div><button class="pri" data-g="pick:${id}">選這位</button></div>`
      :`<button class="gcard back" data-g="flip:${id}"><span>點擊翻開</span></button>`;}).join('')}</div>`;}
   el.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{const a=b.dataset.g;
    if(a==='id'){AUDIO.play('reveal');g.stage=1;this.renderGacha();}
@@ -1842,8 +1855,8 @@ const UI={
   ${r.skills.map(s=>`<p class="skl ${s.impl?'':'todo'}"><i class="sk sk-${s.c}">${s.n}</i><small>${SKC[s.c]}色${s.cover?'・蓋伏時':''}${s.impl?'':'・尚未啟用'}</small><br>${esc(s.t)}</p>`).join('')}<p class="mis"><b>機密任務</b> ${esc(r.m)}</p></div></div>`;},
  rolePop(id){this.pop(this.roleHTML(id)+(this.artMode?this.artBtns('img',id):''));if(this.artMode)this.bindArt(()=>this.rolePop(id));},
  seatPop(i){const p=G.players[i];const r=p.role;
-  this.pop(`<h3>${esc(p.name)}${p.identity&&(p.revealed||p.idOpen||i===ME)?` <i class="idb id-${p.identity}">${p.identity}</i>`:''}</h3><p class="hint">手牌 ${p.hand.length}　紅 ${reds(p)}　藍 ${blues(p)}　黑 ${blacks(p)}${G.locks.has(i)?'　｜鎖定':''}${G.tigers.has(i)?'　｜調虎離山':''}</p>
-   <div class="chips big">${p.intel.map(c=>this.card(c,{sm:true})).join('')||'<span class="hint">還沒有情報</span>'}</div>${r?this.roleHTML(r):`<p class="hint">${p.roleHidden?'潛伏角色，尚未翻開。':''}</p>`}`);},
+  const covered=!p.roleUp&&!p.revealed;const rv=(i===ME||!covered)?r:null;this.pop(`<h3>${esc(p.name)}${p.identity&&(p.revealed||p.idOpen||i===ME)?` <i class="idb id-${p.identity}">${p.identity}</i>`:''}</h3><p class="hint">手牌 ${p.hand.length}　紅 ${reds(p)}　藍 ${blues(p)}　黑 ${blacks(p)}${G.locks.has(i)?'　｜鎖定':''}${G.tigers.has(i)?'　｜調虎離山':''}</p>
+   <div class="chips big">${p.intel.map(c=>this.card(c,{sm:true})).join('')||'<span class="hint">還沒有情報</span>'}</div>${covered&&i!==ME?`<p class="hint">角色蓋著中，看不到是誰。</p>`:''}${rv?(covered?'<p class="hint">（你的角色目前蓋著，其他人看不到）</p>':'')+this.roleHTML(rv):''}`);},
  /* ---------- modals & lobby ---------- */
  modal(html,wide,dismiss){const m=$('#modal');m.innerHTML=`<div class="mbox ${wide?'wide':''}" role="dialog">${html}</div>`;m.hidden=false;m.onclick=dismiss?(e=>{if(e.target===m)this.closeModal();}):null;m.querySelectorAll('[data-m="close"]').forEach(b=>b.onclick=()=>this.closeModal());},
  closeModal(){$('#modal').hidden=true;},
@@ -1890,7 +1903,7 @@ const UI={
   $('#mg').onclick=()=>{this.closeModal();if(G&&!G.over&&alive(ME)){this.dropPending();Net.sendSurrender();}};
   $('#ml').onclick=()=>location.href=location.pathname;},
  openGallery(tab='roles',artMode){this.artMode=!!artMode;const draw=(t)=>{this.modal(`<div class="gh"><h2>${this.artMode?'美術設定':'圖鑑'}</h2><div class="tabs"><button data-g="roles" class="${t==='roles'?'on':''}">角色</button><button data-g="cards" class="${t==='cards'?'on':''}">功能牌</button></div><button data-m="close" class="ghost mini">關閉</button></div>
-   ${this.artMode?'<p class="hint">點選角色或卡牌，就能上傳圖片替換。連線時，房主的設定會同步給房間內所有玩家。</p>':''}${t==='roles'?`<p class="hint"><i class="sk sk-B">藍</i>可回應　<i class="sk sk-R">紅</i>條件觸發　<i class="sk sk-Y">黃</i>每局一次</p><div class="ggrid">${ROLES.map(r=>`<button class="gr" data-r="${r.id}"><img src="${IMG[r.id]}" alt=""><b>${r.name}</b></button>`).join('')}</div>`
+   ${this.artMode?'<p class="hint">點選角色或卡牌，就能上傳圖片替換。連線時，房主的設定會同步給房間內所有玩家。</p>':''}${t==='roles'?`<p class="hint"><i class="sk sk-B">藍</i>可回應　<i class="sk sk-R">紅</i>條件觸發　<i class="sk sk-Y">黃</i>每局一次</p><div class="ggrid">${ROLES.map(r=>`<button class="gr" data-r="${r.id}">${r.hidden?'<i class="shield"></i>':''}<img src="${IMG[r.id]}" alt=""><b>${r.name}</b></button>`).join('')}</div>`
    :`<div class="gcards">${Object.entries(CT).map(([k,c])=>`<button class="gcx" data-c="${k}">${this.card({uid:0,type:k,color:Object.keys(c.col)[0],trans:Object.keys(c.tr)[0],v:0})}<small>${c.n} 張</small></button>`).join('')}</div>`}`,true);
    $('#modal').onclick=e=>{if(e.target===$('#modal'))this.closeModal();};
    document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>draw(b.dataset.g));
